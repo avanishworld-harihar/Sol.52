@@ -17,6 +17,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { authorizeProjectRequest } from "@/lib/auth/data-access";
 import { z } from "zod";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
 import { bomOverridesSchema } from "@/lib/proposal-extras-schema";
@@ -33,8 +34,9 @@ const patchSchema = z.object({
   unlock: z.boolean().optional()
 });
 
-export async function GET(_req: NextRequest, ctx: RouteCtx) {
+export async function GET(req: NextRequest, ctx: RouteCtx) {
   const { id } = await ctx.params;
+  const denied = await authorizeProjectRequest(req, id); if (denied) return denied;
   const admin = createSupabaseAdmin();
   if (!admin) return NextResponse.json({ ok: false, error: "supabase_admin_unavailable" }, { status: 503 });
 
@@ -66,6 +68,7 @@ export async function GET(_req: NextRequest, ctx: RouteCtx) {
 export async function PATCH(req: NextRequest, ctx: RouteCtx) {
   try {
     const { id } = await ctx.params;
+    const denied = await authorizeProjectRequest(req, id); if (denied) return denied;
     const body = patchSchema.parse(await req.json());
 
     const admin = createSupabaseAdmin();

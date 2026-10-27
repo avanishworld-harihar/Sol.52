@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { deletePipelineProject, patchPipelineProject } from "@/lib/supabase";
+import { authorizeProjectRequest, isOrganizationMemberUser, mayChooseAssignee } from "@/lib/auth/data-access";
+import { resolveOrgScope } from "@/lib/auth/org-scope";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +20,8 @@ const patchSchema = z
     install_progress: z.number().min(0).max(100).optional(),
     capacity_kw: z.string().max(40).optional(),
     official_name: z.string().max(160).optional(),
-    detail: z.string().max(240).optional()
+    detail: z.string().max(240).optional(),
+    assigned_to_user_id: z.string().uuid().optional().nullable()
   })
   .refine((v) => Object.keys(v).length > 0, { message: "Empty patch" });
 
@@ -28,8 +31,18 @@ export async function PATCH(req: NextRequest, ctx: RouteCtx) {
     if (!id) {
       return NextResponse.json({ ok: false, error: "missing id" }, { status: 400 });
     }
+    const denied = await authorizeProjectRequest(req, id); if (denied) return denied;
     const body = await req.json();
     const parsed = patchSchema.parse(body);
+    if (parsed.assigned_to_user_id !== undefined) {
+      const scope = await resolveOrgScope(req);
+      if (!mayChooseAssignee(scope)) {
+        return NextResponse.json({ ok: false, error: "Only company admin can reassign projects." }, { status: 403 });
+      }
+      if (parsed.assigned_to_user_id && scope.organizationId && !(await isOrganizationMemberUser(scope.organizationId, parsed.assigned_to_user_id))) {
+        return NextResponse.json({ ok: false, error: "Assignee is not a member of this organization." }, { status: 400 });
+      }
+    }
 
     /**
      * Convenience: clients can pass `archived_at: true` to mean "archive now".
@@ -49,7 +62,8 @@ export async function PATCH(req: NextRequest, ctx: RouteCtx) {
       install_progress: parsed.install_progress,
       capacity_kw: parsed.capacity_kw,
       official_name: parsed.official_name,
-      detail: parsed.detail
+      detail: parsed.detail,
+      assigned_to_user_id: parsed.assigned_to_user_id
     });
     if (!row) {
       return NextResponse.json({ ok: false, error: "db_unavailable" }, { status: 503 });
@@ -69,11 +83,16 @@ export async function PATCH(req: NextRequest, ctx: RouteCtx) {
   }
 }
 
-export async function DELETE(_req: NextRequest, ctx: RouteCtx) {
+export async function DELETE(req: NextRequest, ctx: RouteCtx) {
   try {
     const { id } = await ctx.params;
     if (!id) {
       return NextResponse.json({ ok: false, error: "missing id" }, { status: 400 });
+    }
+    const denied = await authorizeProjectRequest(req, id); if (denied) return denied;
+    const scope = await resolveOrgScope(req);
+    if (scope.mode === "session" && scope.session?.orgRole !== "company_admin") {
+      return NextResponse.json({ ok: false, error: "Only company admin can permanently delete a project." }, { status: 403 });
     }
     const result = await deletePipelineProject(id);
     if (!result.ok) {

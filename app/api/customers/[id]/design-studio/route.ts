@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { authorizeLeadRequest } from "@/lib/auth/data-access";
 import { assertProjectDesignStudioAccess } from "@/lib/billing/design-studio-entitlements";
 import { isBillingEntitlementError } from "@/lib/billing/errors";
 import { mapCustomerRow } from "@/lib/customers-map";
@@ -17,6 +18,7 @@ type RouteCtx = { params: Promise<{ id: string }> };
 export async function POST(req: NextRequest, ctx: RouteCtx) {
   try {
     const { id: leadId } = await ctx.params;
+    const denied = await authorizeLeadRequest(req, leadId); if (denied) return denied;
     if (!leadId?.trim()) {
       return NextResponse.json({ ok: false, error: "missing_id" }, { status: 400 });
     }

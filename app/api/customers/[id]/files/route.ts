@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { authorizeLeadFieldRequest } from "@/lib/auth/data-access";
 import { z } from "zod";
 import { appendActivityEvent } from "@/lib/followup-store";
 import { listCustomerFilesForApi } from "@/lib/document-write-router";
 import { resolveDefaultOrgId } from "@/lib/project-store";
+import { resolveOrgScope } from "@/lib/auth/org-scope";
 import {
   customerFileTypeToAssetCategory,
   insertCustomerAsset,
@@ -22,12 +24,14 @@ const postSchema = z.object({
   mime_type: z.string().max(100).optional().nullable(),
 });
 
-export async function GET(_req: NextRequest, ctx: RouteCtx) {
+export async function GET(req: NextRequest, ctx: RouteCtx) {
   try {
     const { id } = await ctx.params;
+    const denied = await authorizeLeadFieldRequest(req, id); if (denied) return denied;
     if (!id) return NextResponse.json({ ok: false, error: "missing id" }, { status: 400 });
 
-    const data = await listCustomerFilesForApi(id);
+    const scope = await resolveOrgScope(req);
+    const data = await listCustomerFilesForApi(id, scope.organizationId);
     return NextResponse.json({ ok: true, data });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Failed";
@@ -38,12 +42,14 @@ export async function GET(_req: NextRequest, ctx: RouteCtx) {
 export async function POST(req: NextRequest, ctx: RouteCtx) {
   try {
     const { id: leadId } = await ctx.params;
+    const denied = await authorizeLeadFieldRequest(req, leadId); if (denied) return denied;
     if (!leadId) return NextResponse.json({ ok: false, error: "missing id" }, { status: 400 });
 
     const body = await req.json();
     const parsed = postSchema.parse(body);
 
-    const orgId = await resolveDefaultOrgId();
+    const scope = await resolveOrgScope(req);
+    const orgId = scope.organizationId ?? await resolveDefaultOrgId();
     if (!orgId) {
       return NextResponse.json({ ok: false, error: "organization_not_configured" }, { status: 400 });
     }

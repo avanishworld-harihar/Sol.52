@@ -4,6 +4,7 @@ import { denyIfStrictUnauthenticated, resolveOrgScope } from "@/lib/auth/org-sco
 import { normalizeLeadStatus, type LeadStatusKey } from "@/lib/lead-status";
 import { normalizeSource, SOURCE_META, type LeadSourceKey } from "@/lib/lead-source";
 import { batchNextFollowups, listCustomerInsightRows } from "@/lib/supabase";
+import { employeeAssignmentUserId } from "@/lib/auth/data-access";
 
 export const dynamic = "force-dynamic";
 
@@ -105,6 +106,7 @@ export async function GET(req: NextRequest) {
     const rows = await listCustomerInsightRows({
       organizationId: scope.organizationId,
       includeNullOrg: scope.includeUnscopedRows,
+      assignedToUserId: employeeAssignmentUserId(scope),
     });
     const leadIds = rows.map((row) => row.id).filter(Boolean);
     const leadChunks = Array.from({ length: Math.ceil(leadIds.length / 200) }, (_, index) =>

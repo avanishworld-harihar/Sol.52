@@ -125,7 +125,26 @@ export async function ensureProjectForWonLead(
   const client = db();
   if (!client || !leadId.trim()) return null;
 
-  const orgId = await resolveDefaultOrgId();
+  let orgId: string | null = null;
+  let assignedToUserId: string | null = null;
+  let createdByUserId: string | null = null;
+  try {
+    const { resolveLeadsTable } = await import("@/lib/supabase");
+    const leadsTable = await resolveLeadsTable();
+    if (leadsTable) {
+      const { data: ownership } = await client
+        .from(leadsTable)
+        .select("organization_id, assigned_to_user_id, created_by_user_id")
+        .eq("id", leadId)
+        .maybeSingle();
+      orgId = ownership?.organization_id ? String(ownership.organization_id) : null;
+      assignedToUserId = ownership?.assigned_to_user_id ? String(ownership.assigned_to_user_id) : null;
+      createdByUserId = ownership?.created_by_user_id ? String(ownership.created_by_user_id) : null;
+    }
+  } catch {
+    // Pre-migration compatibility; organization fallback below.
+  }
+  orgId ??= await resolveDefaultOrgId();
   /** Project main title = bill name when present; lead contact used for brackets in UI. */
   const billName = lead?.consumer_name?.trim() || "";
   const contactName = lead?.name?.trim() || "";
@@ -141,6 +160,7 @@ export async function ensureProjectForWonLead(
   if (existing) {
     const patch: Record<string, unknown> = { updated_at: now };
     if (orgId && !existing.organization_id) patch.organization_id = orgId;
+    if (assignedToUserId && !existing.assigned_to_user_id) patch.assigned_to_user_id = assignedToUserId;
     /** Keep official_name as bill (main); refresh when consumer_name known. */
     if (billName) {
       patch.official_name = billName;
@@ -194,6 +214,8 @@ export async function ensureProjectForWonLead(
     updated_at: now,
   };
   if (orgId) insertPayload.organization_id = orgId;
+  if (assignedToUserId) insertPayload.assigned_to_user_id = assignedToUserId;
+  if (createdByUserId) insertPayload.created_by_user_id = createdByUserId;
 
   const { data, error } = await insertProjectAdaptive(client, insertPayload);
   if (error || !data) {
@@ -502,6 +524,8 @@ export interface ProjectRow {
   id: string;
   lead_id: string | null;
   organization_id: string | null;
+  assigned_to_user_id: string | null;
+  created_by_user_id?: string | null;
   official_name: string | null;
   /** Legacy / alternate display column on some deploys. */
   customer_name?: string | null;
@@ -821,6 +845,8 @@ export async function getProjectDetail(projectId: string): Promise<ProjectDetail
 export async function listProjects(opts: {
   organizationId?: string | null;
   includeNullOrg?: boolean;
+  assignedToUserId?: string | null;
+  unassignedOnly?: boolean;
   stage?: string | null;
   view?: "active" | "completed" | "drafts" | "archived";
   limit?: number;
@@ -842,6 +868,8 @@ export async function listProjects(opts: {
         ? query.or(`organization_id.eq.${opts.organizationId},organization_id.is.null`)
         : query.eq("organization_id", opts.organizationId);
     }
+    if (opts.assignedToUserId) query = query.eq("assigned_to_user_id", opts.assignedToUserId);
+    if (opts.unassignedOnly) query = query.is("assigned_to_user_id", null);
     if (opts.stage) query = query.eq("current_stage", opts.stage);
 
     if (view === "active") {
@@ -915,7 +943,8 @@ export interface ProjectViewCounts {
 
 /** Lightweight tab counts; avoids downloading every project four times. */
 export async function getProjectViewCounts(
-  organizationId?: string | null
+  organizationId?: string | null,
+  assignedToUserId?: string | null
 ): Promise<ProjectViewCounts | null> {
   const client = db();
   if (!client) return null;
@@ -923,6 +952,7 @@ export async function getProjectViewCounts(
   const base = () => {
     let q = client.from("projects").select("id", { count: "exact", head: true });
     if (organizationId) q = q.eq("organization_id", organizationId);
+    if (assignedToUserId) q = q.eq("assigned_to_user_id", assignedToUserId);
     return q;
   };
 
@@ -941,6 +971,7 @@ export async function getProjectViewCounts(
       .from("projects")
       .select("dashboard_visible, archived_at, current_stage, actual_completion, detail, official_name, customer_name, project_code");
     if (organizationId) fallback = fallback.eq("organization_id", organizationId);
+    if (assignedToUserId) fallback = fallback.eq("assigned_to_user_id", assignedToUserId);
     const { data, error } = await fallback;
     if (error || !Array.isArray(data)) return null;
     const rows = filterOutDemoSeedProjects(data as Record<string, unknown>[]);
@@ -960,7 +991,10 @@ export async function getProjectViewCounts(
 }
 
 /** Dashboard stats aggregate for Phase 3 Operations Dashboard. */
-export async function getProjectDashboardStats(organizationId?: string | null) {
+export async function getProjectDashboardStats(
+  organizationId?: string | null,
+  assignedToUserId?: string | null
+) {
   const client = db();
   if (!client) return null;
 
@@ -975,6 +1009,7 @@ export async function getProjectDashboardStats(organizationId?: string | null) {
   if (organizationId) {
     query = query.eq("organization_id", organizationId);
   }
+  if (assignedToUserId) query = query.eq("assigned_to_user_id", assignedToUserId);
 
   const initialResult = await query;
   let data: Record<string, unknown>[] | null = initialResult.data as Record<string, unknown>[] | null;
@@ -986,6 +1021,7 @@ export async function getProjectDashboardStats(organizationId?: string | null) {
       .is("archived_at", null)
       .eq("dashboard_visible", true);
     if (organizationId) fallback = fallback.eq("organization_id", organizationId);
+    if (assignedToUserId) fallback = fallback.eq("assigned_to_user_id", assignedToUserId);
     const fallbackResult = await fallback;
     data = fallbackResult.data as Record<string, unknown>[] | null;
     error = fallbackResult.error;
@@ -1111,7 +1147,8 @@ export interface OutstandingCollectionRow {
  * Sort: pending_inr DESC (server-side).
  */
 export async function listOutstandingCollections(
-  organizationId?: string | null
+  organizationId?: string | null,
+  assignedToUserId?: string | null
 ): Promise<OutstandingCollectionRow[]> {
   const client = db();
   if (!client) return [];
@@ -1134,6 +1171,7 @@ export async function listOutstandingCollections(
   if (organizationId) {
     query = query.eq("organization_id", organizationId);
   }
+  if (assignedToUserId) query = query.eq("assigned_to_user_id", assignedToUserId);
 
   const { data, error } = await query;
   if (error || !Array.isArray(data)) return [];

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { denyIfStrictUnauthenticated, resolveOrgScope } from "@/lib/auth/org-scope";
 import { listProjects } from "@/lib/project-store";
+import { employeeAssignmentUserId } from "@/lib/auth/data-access";
 
 export const dynamic = "force-dynamic";
 
@@ -9,7 +10,12 @@ export async function GET(req: NextRequest) {
     const scope = await resolveOrgScope(req);
     const denied = denyIfStrictUnauthenticated(scope);
     if (denied) return denied;
-    const base = { organizationId: scope.organizationId, includeNullOrg: scope.includeUnscopedRows, limit: 5000 };
+    const base = {
+      organizationId: scope.organizationId,
+      includeNullOrg: scope.includeUnscopedRows,
+      assignedToUserId: employeeAssignmentUserId(scope),
+      limit: 5000,
+    };
     const [active, completed] = await Promise.all([
       listProjects({ ...base, view: "active" }),
       listProjects({ ...base, view: "completed" }),

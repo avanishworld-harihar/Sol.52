@@ -6,6 +6,7 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { listProjectActivity } from "@/lib/project-store";
+import { authorizeProjectRequest } from "@/lib/auth/data-access";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +16,7 @@ export async function GET(req: NextRequest, ctx: RouteCtx) {
   try {
     const { id } = await ctx.params;
     if (!id) return NextResponse.json({ ok: false, error: "missing_id" }, { status: 400 });
+    const denied = await authorizeProjectRequest(req, id); if (denied) return denied;
 
     const url = req.nextUrl;
     const limit = Math.min(100, Math.max(1, Number(url.searchParams.get("limit") ?? 50)));

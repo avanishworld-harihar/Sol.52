@@ -10,7 +10,8 @@ type Step = "phone" | "otp";
 function LoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const next = searchParams.get("next") || "/customers";
+  const nextRaw = searchParams.get("next");
+  const next = nextRaw?.startsWith("/") && !nextRaw.startsWith("//") ? nextRaw : "/customers";
 
   const [step, setStep] = useState<Step>("phone");
   const [phone, setPhone] = useState("");
@@ -82,7 +83,7 @@ function LoginPageContent() {
         <div className="ss-card p-5">
           <h2 className="ss-section-headline text-lg">Sol.52 login</h2>
           <p className="ss-section-subline text-sm">
-            Enter your mobile number. We will send a one-time code. No password.
+            Enter your mobile number. One OTP signs this device in for up to 30 days—no daily password.
           </p>
 
           {error ? (
@@ -108,12 +109,19 @@ function LoginPageContent() {
                 autoFocus
                 required
               />
-              <FloatingLabelInput
-                label="Company name (new accounts only)"
-                type="text"
-                value={companyName}
-                onChange={(e) => setCompanyName(e.target.value)}
-              />
+              <details className="rounded-xl border border-border/60 px-3 py-2">
+                <summary className="cursor-pointer text-xs font-bold text-muted-foreground">
+                  Creating a new company?
+                </summary>
+                <FloatingLabelInput
+                  label="Company name"
+                  type="text"
+                  containerClassName="mt-3"
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                />
+                <p className="mt-2 text-[11px] text-muted-foreground">Invited employees can leave this blank.</p>
+              </details>
               <button type="submit" disabled={busy || phone.trim().length < 8} className="ss-cta-primary w-full">
                 {busy ? "Sending…" : "Send OTP"}
               </button>

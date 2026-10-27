@@ -38,13 +38,14 @@ export type CustomerUploadResult =
   | { ok: false; error: string };
 
 export async function writeCustomerFileUpload(input: {
+  organizationId?: string | null;
   leadId: string;
   fileBuffer: Buffer;
   mimeType: string;
   fileType: CustomerFileType;
   fileName: string;
 }): Promise<CustomerUploadResult> {
-  const orgId = await resolveDefaultOrgId();
+  const orgId = input.organizationId ?? await resolveDefaultOrgId();
   if (!orgId) return { ok: false, error: "organization_not_configured" };
 
   const uploaded = await uploadCustomerFile(
@@ -108,13 +109,14 @@ async function findFirstActiveProjectForCustomer(
  * Customer Documents Hub — upload by project doc_category (same registry as Project Hub).
  */
 export async function writeCustomerHubCategoryUpload(input: {
+  organizationId?: string | null;
   leadId: string;
   docCategory: ProjectDocumentCategory;
   fileBuffer: Buffer;
   mimeType: string;
   fileName: string;
 }): Promise<CustomerUploadResult | ProjectUploadResult> {
-  const orgId = await resolveDefaultOrgId();
+  const orgId = input.organizationId ?? await resolveDefaultOrgId();
   if (!orgId) return { ok: false, error: "organization_not_configured" };
 
   const project = await findFirstActiveProjectForCustomer(input.leadId, orgId);
@@ -137,6 +139,7 @@ export async function writeCustomerHubCategoryUpload(input: {
   }
 
   const fallback = await writeCustomerFileUpload({
+    organizationId: orgId,
     leadId: input.leadId,
     fileBuffer: input.fileBuffer,
     mimeType: input.mimeType,
@@ -331,8 +334,8 @@ export async function writeProjectDocumentUpload(input: {
 }
 
 /** GET /files — customer_assets shaped like legacy customer_files for CRM compat. */
-export async function listCustomerFilesForApi(leadId: string): Promise<Record<string, unknown>[]> {
-  const orgId = await resolveDefaultOrgId();
+export async function listCustomerFilesForApi(leadId: string, organizationId?: string | null): Promise<Record<string, unknown>[]> {
+  const orgId = organizationId ?? await resolveDefaultOrgId();
   const { listCustomerAssets } = await import("@/lib/customer-asset-store");
   const assets = await listCustomerAssets(leadId, orgId);
   const assetRows = assets.map((a) =>

@@ -3,6 +3,7 @@
  * POST /api/projects/[id]/documents — Upload file (multipart/form-data)
  */
 import { NextRequest, NextResponse } from "next/server";
+import { authorizeProjectRequest } from "@/lib/auth/data-access";
 import { logDocumentUploaded } from "@/lib/project-activity-logger";
 import {
   getProjectOrgContext,
@@ -29,6 +30,7 @@ type RouteCtx = { params: Promise<{ id: string }> };
 export async function GET(req: NextRequest, ctx: RouteCtx) {
   try {
     const { id: projectId } = await ctx.params;
+    const denied = await authorizeProjectRequest(req, projectId); if (denied) return denied;
     if (!projectId) {
       return NextResponse.json({ ok: false, error: "missing_id" }, { status: 400 });
     }
@@ -92,6 +94,7 @@ export async function GET(req: NextRequest, ctx: RouteCtx) {
 export async function POST(req: NextRequest, ctx: RouteCtx) {
   try {
     const { id: projectId } = await ctx.params;
+    const denied = await authorizeProjectRequest(req, projectId); if (denied) return denied;
     if (!projectId) {
       return NextResponse.json({ ok: false, error: "missing_id" }, { status: 400 });
     }

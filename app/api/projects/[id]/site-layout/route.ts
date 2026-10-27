@@ -6,6 +6,7 @@ import { createSupabaseAdmin } from "@/lib/supabase-admin";
 import { supabase } from "@/lib/supabase";
 import { saveSiteLayoutSchema, type ProjectSiteLayout } from "@/lib/site-layout";
 import { resolveDesignStudioSnapshotUrl } from "@/lib/design-studio-snapshot-upload";
+import { authorizeProjectRequest } from "@/lib/auth/data-access";
 
 export const dynamic = "force-dynamic";
 
@@ -27,9 +28,10 @@ async function withSnapshotUrl(
   return { ...row, map_snapshot_url: url };
 }
 
-export async function GET(_req: NextRequest, ctx: RouteCtx) {
+export async function GET(req: NextRequest, ctx: RouteCtx) {
   try {
     const { id } = await ctx.params;
+    const denied = await authorizeProjectRequest(req, id); if (denied) return denied;
     if (!id) return NextResponse.json({ ok: false, error: "missing_id" }, { status: 400 });
     const client = db();
     if (!client) return NextResponse.json({ ok: false, error: "db_unavailable" }, { status: 503 });
@@ -63,6 +65,7 @@ export async function GET(_req: NextRequest, ctx: RouteCtx) {
 export async function PUT(req: NextRequest, ctx: RouteCtx) {
   try {
     const { id } = await ctx.params;
+    const denied = await authorizeProjectRequest(req, id); if (denied) return denied;
     if (!id) return NextResponse.json({ ok: false, error: "missing_id" }, { status: 400 });
     await assertProjectDesignStudioAccess(id, req);
     const parsed = saveSiteLayoutSchema.parse(await req.json());

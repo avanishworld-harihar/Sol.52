@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { authorizeProjectRequest } from "@/lib/auth/data-access";
 import { z } from "zod";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
 import { supabase } from "@/lib/supabase";
@@ -42,6 +43,7 @@ const bodySchema = z.object({
 export async function POST(req: NextRequest, ctx: RouteCtx) {
   try {
     const { id: projectId } = await ctx.params;
+    const denied = await authorizeProjectRequest(req, projectId); if (denied) return denied;
     if (!projectId) {
       return NextResponse.json({ ok: false, error: "missing_id" }, { status: 400 });
     }

@@ -17,6 +17,7 @@ import { appendActivityEvent } from "@/lib/followup-store";
 import type { CustomerLead } from "@/lib/types";
 import { z } from "zod";
 import { denyIfStrictUnauthenticated, resolveOrgScope } from "@/lib/auth/org-scope";
+import { assigneeForCreate, employeeAssignmentUserId, isOrganizationMemberUser, mayChooseAssignee } from "@/lib/auth/data-access";
 
 type CustomerStageFilter = "all" | "leads" | "proposal-sent" | "active-projects";
 type CustomerFollowupFilter = "all" | "scheduled" | "today" | "overdue" | "unscheduled";
@@ -104,6 +105,7 @@ const customerSchema = z.object({
   /** Always create a new person row (family member). Default true for manual. */
   force_new: z.boolean().optional(),
   is_whatsapp_contact: z.boolean().optional(),
+  assigned_to_user_id: z.string().uuid().optional().nullable(),
 });
 
 let lastCustomerRepairAt = 0;
@@ -134,6 +136,7 @@ export async function GET(req: NextRequest) {
     if (denied) return denied;
 
     const paginated = req.nextUrl.searchParams.get("view") === "page";
+    const unassignedOnly = req.nextUrl.searchParams.get("owner") === "unassigned" && mayChooseAssignee(scope);
     if (paginated) {
       const requestedLimit = Number(req.nextUrl.searchParams.get("limit") ?? 40);
       const limit = Math.max(10, Math.min(100, Number.isFinite(requestedLimit) ? Math.floor(requestedLimit) : 40));
@@ -169,6 +172,8 @@ export async function GET(req: NextRequest) {
         const page = await listCustomersPage({
           organizationId: scope.organizationId,
           includeNullOrg: scope.includeUnscopedRows,
+          assignedToUserId: employeeAssignmentUserId(scope),
+          unassignedOnly,
           search,
           stage,
           smartView,
@@ -204,19 +209,22 @@ export async function GET(req: NextRequest) {
      */
     // Repair/backfill work is throttled and best-effort. A read should never
     // wait on three write-heavy maintenance jobs before returning the list.
-    scheduleCustomerRepairs();
-
-    void (async () => {
-      try {
-        await syncLeadsFromActiveProjects();
-      } catch (err) {
-        console.warn("[customers GET] project→lead sync:", err);
-      }
-    })();
+    if (scope.mode === "legacy" || scope.session?.orgRole === "company_admin") {
+      scheduleCustomerRepairs();
+      void (async () => {
+        try {
+          await syncLeadsFromActiveProjects();
+        } catch (err) {
+          console.warn("[customers GET] project→lead sync:", err);
+        }
+      })();
+    }
 
     const raw = await listCustomers({
       organizationId: scope.organizationId,
       includeNullOrg: scope.includeUnscopedRows,
+      assignedToUserId: employeeAssignmentUserId(scope),
+      unassignedOnly,
     });
     const decorated = await decorateCustomerRows(raw as Record<string, unknown>[]);
 
@@ -235,6 +243,13 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const payload = customerSchema.parse(body);
+    if (
+      payload.assigned_to_user_id &&
+      scope.organizationId &&
+      !(await isOrganizationMemberUser(scope.organizationId, payload.assigned_to_user_id))
+    ) {
+      return NextResponse.json({ ok: false, error: "Assignee is not a member of this organization." }, { status: 400 });
+    }
     /**
      * Manual add creates a distinct person. Same phone → household link (not merge),
      * so family members both appear in Customers.
@@ -257,6 +272,11 @@ export async function POST(req: NextRequest) {
       isWhatsappContact: payload.is_whatsapp_contact,
       consumerName: payload.consumer_name?.trim() || null,
       organizationId: scope.organizationId,
+      assignedToUserId: assigneeForCreate(
+        scope,
+        mayChooseAssignee(scope) ? payload.assigned_to_user_id : null
+      ),
+      createdByUserId: scope.session?.userId ?? null,
     });
     const mappedData = mapCustomerRow(result.data as Record<string, unknown>);
     if (!result.deduped) {

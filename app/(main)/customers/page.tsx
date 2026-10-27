@@ -62,6 +62,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useSWRConfig } from "swr";
 import useSWRInfinite from "swr/infinite";
 import { AlarmClock, CalendarCheck2, CalendarClock, Check, ChevronRight, ListChecks, Loader2, Plus, Search, X } from "lucide-react";
+import { useAppSession } from "@/hooks/use-app-session";
 
 /** Above `#ss-bottom-nav-portal` (9999) so lead sheet footer stays tappable on mobile. */
 const LEAD_MODAL_Z = "z-[10060]";
@@ -109,6 +110,17 @@ function CustomersPageContent() {
   const searchParams = useSearchParams();
   const online = useOnlineStatus();
   const { mutate: mutateGlobal } = useSWRConfig();
+  const { session: appSession } = useAppSession();
+  const [teamMembers, setTeamMembers] = useState<Array<{ user_id: string; phone?: string | null; role: string }>>([]);
+  useEffect(() => {
+    if (appSession?.gates.canManageTeam !== true) return;
+    void fetch("/api/team/members", { cache: "no-store" })
+      .then((res) => res.json())
+      .then((payload: { data?: { members?: Array<{ user_id: string; phone?: string | null; role: string }> } }) =>
+        setTeamMembers(payload.data?.members ?? [])
+      )
+      .catch(() => setTeamMembers([]));
+  }, [appSession?.gates.canManageTeam]);
   const openFromQuery = searchParams.get("add") === "1";
   const [leadModal, setLeadModal] = useState<LeadModal>(() => (openFromQuery ? "add" : "none"));
 
@@ -144,7 +156,8 @@ function CustomersPageContent() {
     survey_status: "",
     area: "",
     location: "",
-    connection_type: ""
+    connection_type: "",
+    assigned_to_user_id: ""
   });
   const [scheduleOnCreate, setScheduleOnCreate] = useState(true);
   const [newLeadCallbackPreset, setNewLeadCallbackPreset] = useState<CallbackPresetId>("next_week");
@@ -170,6 +183,7 @@ function CustomersPageContent() {
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
   const [smartView, setSmartView] = useState<SmartView>(() => resolveSmartView(searchParams.get("view")));
   const [customerSort, setCustomerSort] = useState<CustomerSort>(() => resolveCustomerSort(searchParams.get("sort")));
+  const ownerFilter = searchParams.get("owner") === "unassigned" ? "unassigned" : null;
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(() => new Set());
   const [bulkAction, setBulkAction] = useState("callback:next_week");
@@ -209,11 +223,12 @@ function CustomersPageContent() {
     if (followupFilter !== "all") params.set("callback", followupFilter);
     if (smartView !== "all") params.set("smart", smartView);
     if (customerSort !== "recent") params.set("sort", customerSort);
+    if (ownerFilter) params.set("owner", ownerFilter);
     if (pageIndex > 0 && previousPage?.pagination.nextCursor) {
       params.set("cursor", previousPage.pagination.nextCursor);
     }
     return `/api/customers?${params.toString()}`;
-  }, [customerSort, debouncedSearchQuery, followupFilter, smartView, stageFilter]);
+  }, [customerSort, debouncedSearchQuery, followupFilter, ownerFilter, smartView, stageFilter]);
 
   const {
     data: customerPages,
@@ -672,7 +687,8 @@ function CustomersPageContent() {
       survey_status: "",
       area: "",
       location: "",
-      connection_type: ""
+      connection_type: "",
+      assigned_to_user_id: ""
     });
   }
 
@@ -698,7 +714,8 @@ function CustomersPageContent() {
       })(),
       area: (customer.area ?? "").trim(),
       location: (customer.location ?? "").trim(),
-      connection_type: (customer.connection_type ?? "").trim()
+      connection_type: (customer.connection_type ?? "").trim(),
+      assigned_to_user_id: customer.assigned_to_user_id ?? ""
     });
   }
 
@@ -894,6 +911,9 @@ function CustomersPageContent() {
               connection_type: form.connection_type.trim()
                 ? form.connection_type.trim()
                 : null,
+              ...(appSession?.gates.canManageTeam
+                ? { assigned_to_user_id: form.assigned_to_user_id || null }
+                : {}),
             }),
           });
           const j = (await r.json()) as { ok?: boolean; data?: CustomerLead; error?: string };
@@ -941,6 +961,9 @@ function CustomersPageContent() {
       area: form.area.trim() || undefined,
       location: form.location.trim() || undefined,
       connection_type: form.connection_type.trim() || undefined,
+      ...(appSession?.gates.canManageTeam
+        ? { assigned_to_user_id: form.assigned_to_user_id || undefined }
+        : {}),
       next_followup_at: callbackRequest?.dueAt ?? null,
       next_followup_title: callbackRequest?.title ?? null
     };
@@ -964,7 +987,8 @@ function CustomersPageContent() {
         survey_status: "",
         area: "",
         location: "",
-        connection_type: ""
+        connection_type: "",
+        assigned_to_user_id: ""
       });
     }
     setLeadModal("none");
@@ -1116,17 +1140,29 @@ function CustomersPageContent() {
             subtitle={t("customers_sub")}
             subtitleDetail={t("customers_sub_detail")}
             action={
-              <button
-                type="button"
-                className="workspace-cta-primary"
-                onClick={openAddLead}
-              >
-                {t("customers_addLeadCta")}
-              </button>
+              <div className="flex flex-wrap gap-2">
+                <Link href="/field-work" className="inline-flex items-center justify-center rounded-xl border border-teal-200 bg-white/80 px-3 py-2 text-xs font-extrabold text-teal-800 shadow-sm hover:bg-white dark:border-teal-700 dark:bg-white/5 dark:text-teal-200">
+                  Field Work
+                </Link>
+                <button
+                  type="button"
+                  className="workspace-cta-primary"
+                  onClick={openAddLead}
+                >
+                  {t("customers_addLeadCta")}
+                </button>
+              </div>
             }
             footer={<WorkflowLifecycleStrip surface="crm" />}
           />
         </WorkspaceStaggerItem>
+
+        {ownerFilter === "unassigned" ? (
+          <div className="flex items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs dark:border-amber-800 dark:bg-amber-950/30">
+            <span className="font-bold text-amber-900 dark:text-amber-100">Team Inbox · unassigned leads</span>
+            <Link href="/customers" className="font-extrabold text-amber-800 underline dark:text-amber-200">Show all</Link>
+          </div>
+        ) : null}
 
         <WorkspaceStaggerItem>
           <div className="space-y-3">
@@ -1372,7 +1408,7 @@ function CustomersPageContent() {
               onClearFilters={allCustomers.length > 0 && (Boolean(searchQuery.trim()) || stageFilter !== "all" || followupFilter !== "all" || smartView !== "all" || customerSort !== "recent") ? clearListFilters : undefined}
               onStatusChange={handleStatusChange}
               onEditLead={(c) => void openEditLeadFresh(c)}
-              onDeleteLead={(c) => setDeleteTarget(c)}
+              onDeleteLead={appSession?.gates.orgRole === "company_admin" ? (c) => setDeleteTarget(c) : undefined}
               onSelectLead={openCustomer}
               selectionMode={selectionMode}
               selectedLeadIds={selectedLeadIds}
@@ -1744,6 +1780,22 @@ function CustomersPageContent() {
                       </option>
                     ))}
                   </StaticLabelSelect>
+                  {appSession?.gates.canManageTeam ? (
+                    <StaticLabelSelect
+                      label="Lead owner"
+                      containerClassName="my-4"
+                      className={modalSelectClass}
+                      value={form.assigned_to_user_id}
+                      onChange={(e) => setForm((p) => ({ ...p, assigned_to_user_id: e.target.value }))}
+                    >
+                      <option value="">Unassigned</option>
+                      {teamMembers.map((member) => (
+                        <option key={member.user_id} value={member.user_id}>
+                          {member.phone || member.user_id.slice(0, 8)} · {member.role === "company_admin" ? "Admin" : "Employee"}
+                        </option>
+                      ))}
+                    </StaticLabelSelect>
+                  ) : null}
                 </>
               )}
               {error && <p className="text-sm font-semibold text-red-600">{error}</p>}

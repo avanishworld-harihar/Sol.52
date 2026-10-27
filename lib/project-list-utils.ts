@@ -165,6 +165,7 @@ export function buildProjectListUrl(opts: {
   sortDir?: ProjectSortDir;
   page?: number;
   pageSize?: number;
+  owner?: "unassigned" | null;
 }): string {
   const params = new URLSearchParams();
   if (opts.view && opts.view !== "active") params.set("view", opts.view);
@@ -176,6 +177,7 @@ export function buildProjectListUrl(opts: {
   if (opts.sortDir) params.set("dir", opts.sortDir);
   if (opts.page && opts.page > 1) params.set("page", String(opts.page));
   if (opts.pageSize) params.set("pageSize", String(opts.pageSize));
+  if (opts.owner) params.set("owner", opts.owner);
   params.set("limit", String(opts.limit ?? 200));
   const qs = params.toString();
   return qs ? `/api/projects/list?${qs}` : "/api/projects/list";

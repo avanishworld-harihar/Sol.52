@@ -70,6 +70,9 @@ export interface CustomerInput {
   is_whatsapp_contact?: boolean;
   /** Tenant scope — set on create when auth session / inbound org known. */
   organization_id?: string | null;
+  /** Auth user who owns this lead for employee-level isolation. */
+  assigned_to_user_id?: string | null;
+  created_by_user_id?: string | null;
 }
 
 async function countFirstAvailable(candidates: string[]) {
@@ -114,6 +117,9 @@ export type ListPipelineProjectsOptions = {
    * spec). Customers / dashboard still use the full list when omitted.
    */
   wonLeadsOnly?: boolean;
+  organizationId?: string | null;
+  includeNullOrg?: boolean;
+  assignedToUserId?: string | null;
 };
 
 /**
@@ -149,11 +155,14 @@ function pipelineDb() {
 export async function listPipelineProjects(options?: ListPipelineProjectsOptions): Promise<PipelineProjectRow[]> {
   const client = pipelineDb();
   if (!client) return [];
-  const { data: projects, error } = await client
-    .from("projects")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(100);
+  let projectsQuery = client.from("projects").select("*");
+  if (options?.organizationId) {
+    projectsQuery = options.includeNullOrg
+      ? projectsQuery.or(`organization_id.eq.${options.organizationId},organization_id.is.null`)
+      : projectsQuery.eq("organization_id", options.organizationId);
+  }
+  if (options?.assignedToUserId) projectsQuery = projectsQuery.eq("assigned_to_user_id", options.assignedToUserId);
+  const { data: projects, error } = await projectsQuery.order("created_at", { ascending: false }).limit(100);
   if (error) {
     console.warn("[listPipelineProjects]", error.message);
     return [];
@@ -233,6 +242,7 @@ export async function patchPipelineProject(
     capacity_kw?: string;
     official_name?: string;
     detail?: string;
+    assigned_to_user_id?: string | null;
   }
 ): Promise<Record<string, unknown> | null> {
   if (!supabase) return null;
@@ -247,6 +257,7 @@ export async function patchPipelineProject(
   if (patch.capacity_kw !== undefined) updateRow.capacity_kw = patch.capacity_kw?.trim() || null;
   if (patch.official_name !== undefined) updateRow.official_name = patch.official_name?.trim() || null;
   if (patch.detail !== undefined) updateRow.detail = patch.detail?.trim() || null;
+  if (patch.assigned_to_user_id !== undefined) updateRow.assigned_to_user_id = patch.assigned_to_user_id;
 
   const { data, error } = await supabase
     .from("projects")
@@ -282,6 +293,9 @@ export async function upsertPipelineProject(payload: {
   dashboard_visible?: boolean;
   record_type?: "operational" | "draft";
   project_origin?: "legacy" | "manual" | "crm_won" | "design_workspace" | "proposal" | "imported";
+  organization_id?: string | null;
+  assigned_to_user_id?: string | null;
+  created_by_user_id?: string | null;
 }): Promise<Record<string, unknown> | null> {
   const client = createSupabaseAdmin() ?? supabase;
   if (!client) return null;
@@ -367,6 +381,9 @@ export async function upsertPipelineProject(payload: {
     record_type: payload.record_type ?? (payload.dashboard_visible ? "operational" : "draft"),
     project_origin: payload.project_origin ?? (payload.dashboard_visible ? "manual" : "proposal"),
     updated_at: now,
+    ...(payload.organization_id ? { organization_id: payload.organization_id } : {}),
+    ...(payload.assigned_to_user_id ? { assigned_to_user_id: payload.assigned_to_user_id } : {}),
+    ...(payload.created_by_user_id ? { created_by_user_id: payload.created_by_user_id } : {}),
     ...(payload.next_action !== undefined ? { next_action: payload.next_action?.trim() || null } : {}),
     ...(payload.contract_amount_inr !== undefined ? { contract_amount_inr: payload.contract_amount_inr } : {}),
   };
@@ -378,6 +395,8 @@ export async function upsertPipelineProject(payload: {
 export async function listCustomers(opts?: {
   organizationId?: string | null;
   includeNullOrg?: boolean;
+  assignedToUserId?: string | null;
+  unassignedOnly?: boolean;
 }) {
   const client = createSupabaseAdmin() ?? supabase;
   if (!client) return [];
@@ -405,6 +424,8 @@ export async function listCustomers(opts?: {
         query = query.eq("organization_id", opts.organizationId);
       }
     }
+    if (opts?.assignedToUserId) query = query.eq("assigned_to_user_id", opts.assignedToUserId);
+    if (opts?.unassignedOnly) query = query.is("assigned_to_user_id", null);
     const { data, error } = await query;
     if (error) throw error;
     const chunk = (data ?? []) as Record<string, unknown>[];
@@ -435,6 +456,7 @@ export type CustomerInsightRow = {
 export async function listCustomerInsightRows(opts?: {
   organizationId?: string | null;
   includeNullOrg?: boolean;
+  assignedToUserId?: string | null;
 }): Promise<CustomerInsightRow[]> {
   const client = createSupabaseAdmin() ?? supabase;
   if (!client) return [];
@@ -448,7 +470,7 @@ export async function listCustomerInsightRows(opts?: {
   while (rows.length < maxRows) {
     let query = client
       .from(leadsTable)
-      .select("id,name,city,phone,status,monthly_bill,last_touched_at,created_at,source")
+      .select("id,name,city,phone,status,monthly_bill,last_touched_at,created_at,source,assigned_to_user_id")
       .order("created_at", { ascending: false })
       .range(offset, offset + pageSize - 1);
     if (opts?.organizationId) {
@@ -456,6 +478,7 @@ export async function listCustomerInsightRows(opts?: {
         ? query.or(`organization_id.eq.${opts.organizationId},organization_id.is.null`)
         : query.eq("organization_id", opts.organizationId);
     }
+    if (opts?.assignedToUserId) query = query.eq("assigned_to_user_id", opts.assignedToUserId);
     const { data, error } = await query;
     if (error) throw error;
     const chunk = (data ?? []) as Record<string, unknown>[];
@@ -480,6 +503,8 @@ export async function listCustomerInsightRows(opts?: {
 export type CustomerPageQuery = {
   organizationId?: string | null;
   includeNullOrg?: boolean;
+  assignedToUserId?: string | null;
+  unassignedOnly?: boolean;
   search?: string;
   stage?: "all" | "leads" | "proposal-sent" | "active-projects";
   smartView?: "all" | "today" | "overdue" | "no-action" | "new" | "proposal-followup" | "hot" | "dormant" | "won";
@@ -510,6 +535,8 @@ export async function listCustomersPage(opts: CustomerPageQuery): Promise<{
       ? query.or(`organization_id.eq.${opts.organizationId},organization_id.is.null`)
       : query.eq("organization_id", opts.organizationId);
   }
+  if (opts.assignedToUserId) query = query.eq("assigned_to_user_id", opts.assignedToUserId);
+  if (opts.unassignedOnly) query = query.is("assigned_to_user_id", null);
 
   if (opts.stage === "active-projects") {
     query = query.eq("status", "won");
@@ -892,6 +919,8 @@ export async function createCustomer(payload: CustomerInput) {
   if (payload.is_whatsapp_contact === true) basePayload.is_whatsapp_contact = true;
   if (payload.is_whatsapp_contact === false) basePayload.is_whatsapp_contact = false;
   if (payload.organization_id) basePayload.organization_id = payload.organization_id;
+  if (payload.assigned_to_user_id) basePayload.assigned_to_user_id = payload.assigned_to_user_id;
+  if (payload.created_by_user_id) basePayload.created_by_user_id = payload.created_by_user_id;
   basePayload.last_touched_at = new Date().toISOString();
 
   /** Strip CRM v2 columns for retry against pre-012 schemas. */

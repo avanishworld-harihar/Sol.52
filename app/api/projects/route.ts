@@ -13,6 +13,7 @@ import { insertProjectAdaptive } from "@/lib/project-store";
 import { logProjectCreated } from "@/lib/project-activity-logger";
 import { getTaskTemplatesForStage } from "@/lib/project-task-templates";
 import { denyIfStrictUnauthenticated, resolveOrgScope } from "@/lib/auth/org-scope";
+import { assigneeForCreate, denyIfCannotAccessLead, isOrganizationMemberUser, mayChooseAssignee } from "@/lib/auth/data-access";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +27,7 @@ const postSchema = z.object({
   target_completion: z.string().date().optional().nullable(),
   assigned_manager_id: z.string().uuid().optional().nullable(),
   assigned_tech_id: z.string().uuid().optional().nullable(),
+  assigned_to_user_id: z.string().uuid().optional().nullable(),
   contract_amount_inr: z.number().nonnegative().optional().nullable(),
   site_address: z.string().max(500).optional().nullable(),
   /** When false, project is hidden from the active /projects dashboard list. */
@@ -50,6 +52,18 @@ export async function POST(req: NextRequest) {
     const denied = denyIfStrictUnauthenticated(scope);
     if (denied) return denied;
 
+    if (parsed.lead_id) {
+      const leadDenied = await denyIfCannotAccessLead(parsed.lead_id, scope);
+      if (leadDenied) return leadDenied;
+    }
+    if (
+      parsed.assigned_to_user_id &&
+      scope.organizationId &&
+      !(await isOrganizationMemberUser(scope.organizationId, parsed.assigned_to_user_id))
+    ) {
+      return NextResponse.json({ ok: false, error: "Assignee is not a member of this organization." }, { status: 400 });
+    }
+
     const orgId = scope.organizationId;
 
     const now = new Date().toISOString();
@@ -72,6 +86,11 @@ export async function POST(req: NextRequest) {
       status: "pending",
       install_progress: 0,
       updated_at: now,
+      assigned_to_user_id: assigneeForCreate(
+        scope,
+        mayChooseAssignee(scope) ? parsed.assigned_to_user_id : null
+      ),
+      created_by_user_id: scope.session?.userId ?? null,
     };
 
     const cap = parsed.capacity_kw?.trim();

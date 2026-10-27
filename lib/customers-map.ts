@@ -8,6 +8,8 @@ export function mapCustomerRow(row: Record<string, unknown>): CustomerLead {
     phoneRaw != null && String(phoneRaw).trim() ? String(phoneRaw).trim() : null;
   return {
     id: String(row.id ?? ""),
+    assigned_to_user_id: row.assigned_to_user_id != null ? String(row.assigned_to_user_id) : null,
+    created_by_user_id: row.created_by_user_id != null ? String(row.created_by_user_id) : null,
     name: String(row.name ?? ""),
     consumer_name:
       row.consumer_name != null && String(row.consumer_name).trim()

@@ -53,6 +53,12 @@ function buildCrumbs(
     return crumbs;
   }
 
+  if (pathname.startsWith("/field-work")) {
+    const crumbs: Crumb[] = [home, { label: t("nav_field_work"), href: "/field-work", active: pathname === "/field-work" }];
+    if (pathname !== "/field-work") crumbs.push({ label: "Site work", href: pathname, active: true });
+    return crumbs;
+  }
+
   // Projects
   if (pathname.startsWith("/projects")) {
     const crumbs: Crumb[] = [home, { label: t("nav_projects"), href: "/projects", active: pathname === "/projects" }];

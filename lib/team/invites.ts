@@ -14,6 +14,7 @@ export type OrgInviteRow = {
   phone_e164: string;
   phone_digits: string;
   role: OrgRole;
+  work_role?: WorkRole;
   status: "pending" | "accepted" | "cancelled" | "expired";
   invited_by_user_id: string | null;
   created_at: string;
@@ -26,8 +27,18 @@ export type OrgMemberRow = {
   organization_id: string;
   user_id: string;
   role: OrgRole;
+  work_role?: WorkRole;
   created_at: string;
   phone?: string | null;
+  lead_count?: number;
+  project_count?: number;
+};
+
+export type WorkRole = "office_sales" | "field_staff" | "hybrid";
+
+export type TeamWorkSummary = {
+  unassignedLeads: number;
+  unassignedProjects: number;
 };
 
 function db() {
@@ -55,7 +66,7 @@ export async function listOrgMembers(organizationId: string): Promise<OrgMemberR
 
   const { data, error } = await client
     .from("organization_members")
-    .select("id, organization_id, user_id, role, created_at")
+    .select("id, organization_id, user_id, role, work_role, created_at")
     .eq("organization_id", organizationId)
     .order("created_at", { ascending: true });
 
@@ -65,6 +76,16 @@ export async function listOrgMembers(organizationId: string): Promise<OrgMemberR
   }
 
   const members = data as OrgMemberRow[];
+  const [leadCounts, projectCounts] = await Promise.all([
+    countOwnedRows("leads", organizationId),
+    countOwnedRows("projects", organizationId),
+  ]);
+  const withWorkload = (member: OrgMemberRow, phone?: string | null): OrgMemberRow => ({
+    ...member,
+    phone: phone ?? member.phone ?? null,
+    lead_count: leadCounts.get(member.user_id) ?? 0,
+    project_count: projectCounts.get(member.user_id) ?? 0,
+  });
   // Best-effort phone from auth.users
   try {
     const phones = new Map<string, string>();
@@ -82,10 +103,41 @@ export async function listOrgMembers(organizationId: string): Promise<OrgMemberR
       page += 1;
       if (page > 10) break;
     }
-    return members.map((m) => ({ ...m, phone: phones.get(m.user_id) ?? null }));
+    return members.map((m) => withWorkload(m, phones.get(m.user_id)));
   } catch {
-    return members;
+    return members.map((m) => withWorkload(m));
   }
+}
+
+async function countOwnedRows(table: "leads" | "projects", organizationId: string): Promise<Map<string, number>> {
+  const client = db();
+  const counts = new Map<string, number>();
+  if (!client) return counts;
+  const { data, error } = await client
+    .from(table)
+    .select("assigned_to_user_id")
+    .eq("organization_id", organizationId)
+    .not("assigned_to_user_id", "is", null)
+    .limit(20_000);
+  if (error) return counts;
+  for (const row of data ?? []) {
+    const userId = row.assigned_to_user_id ? String(row.assigned_to_user_id) : "";
+    if (userId) counts.set(userId, (counts.get(userId) ?? 0) + 1);
+  }
+  return counts;
+}
+
+export async function getTeamWorkSummary(organizationId: string): Promise<TeamWorkSummary> {
+  const client = db();
+  if (!client) return { unassignedLeads: 0, unassignedProjects: 0 };
+  const [leads, projects] = await Promise.all([
+    client.from("leads").select("id", { count: "exact", head: true }).eq("organization_id", organizationId).is("assigned_to_user_id", null),
+    client.from("projects").select("id", { count: "exact", head: true }).eq("organization_id", organizationId).is("assigned_to_user_id", null),
+  ]);
+  return {
+    unassignedLeads: leads.error ? 0 : leads.count ?? 0,
+    unassignedProjects: projects.error ? 0 : projects.count ?? 0,
+  };
 }
 
 export async function listPendingInvites(organizationId: string): Promise<OrgInviteRow[]> {
@@ -94,7 +146,7 @@ export async function listPendingInvites(organizationId: string): Promise<OrgInv
   const { data, error } = await client
     .from("organization_invites")
     .select(
-      "id, organization_id, phone_e164, phone_digits, role, status, invited_by_user_id, created_at, expires_at, note"
+      "id, organization_id, phone_e164, phone_digits, role, work_role, status, invited_by_user_id, created_at, expires_at, note"
     )
     .eq("organization_id", organizationId)
     .eq("status", "pending")
@@ -110,6 +162,7 @@ export async function createPhoneInvite(input: {
   organizationId: string;
   phone: string;
   role?: OrgRole;
+  workRole?: WorkRole;
   invitedByUserId: string;
   note?: string | null;
 }): Promise<{ invite: OrgInviteRow } | { error: string; status: number; code?: string }> {
@@ -161,6 +214,7 @@ export async function createPhoneInvite(input: {
       phone_e164: phone,
       phone_digits: digits,
       role,
+      work_role: input.workRole ?? "office_sales",
       status: "pending",
       invited_by_user_id: input.invitedByUserId,
       note: input.note?.trim() || null,
@@ -168,7 +222,7 @@ export async function createPhoneInvite(input: {
       updated_at: new Date().toISOString(),
     })
     .select(
-      "id, organization_id, phone_e164, phone_digits, role, status, invited_by_user_id, created_at, expires_at, note"
+      "id, organization_id, phone_e164, phone_digits, role, work_role, status, invited_by_user_id, created_at, expires_at, note"
     )
     .single();
 
@@ -213,7 +267,8 @@ export async function removeOrgMember(input: {
   organizationId: string;
   memberId: string;
   actorUserId: string;
-}): Promise<{ ok: true } | { error: string; status: number }> {
+  reassignToUserId?: string | null;
+}): Promise<{ ok: true; leadsMoved: number; projectsMoved: number; fieldAssignmentsMoved: number } | { error: string; status: number }> {
   const client = db();
   if (!client) return { error: "Database unavailable.", status: 503 };
 
@@ -242,13 +297,81 @@ export async function removeOrgMember(input: {
     }
   }
 
+  const { data, error } = await client.rpc("sol52_offboard_member", {
+    p_org_id: input.organizationId,
+    p_member_id: input.memberId,
+    p_actor_user_id: input.actorUserId,
+    p_reassign_to_user_id: input.reassignToUserId ?? null,
+  });
+  if (error) {
+    if (/sol52_offboard_member|schema cache|does not exist/i.test(error.message)) {
+      return { error: "Safe handover migration is missing. Run migration 100 before removing a member.", status: 503 };
+    }
+    return { error: error.message, status: 400 };
+  }
+  const result = (data ?? {}) as { leads_moved?: number; projects_moved?: number; field_assignments_moved?: number };
+  return {
+    ok: true,
+    leadsMoved: result.leads_moved ?? 0,
+    projectsMoved: result.projects_moved ?? 0,
+    fieldAssignmentsMoved: result.field_assignments_moved ?? 0,
+  };
+}
+
+export async function updateOrgMemberWorkRole(input: {
+  organizationId: string;
+  memberId: string;
+  workRole: WorkRole;
+}): Promise<{ ok: true } | { error: string; status: number }> {
+  const client = createSupabaseAdmin();
+  if (!client) return { error: "Database admin client is not configured.", status: 503 };
+  const { data, error } = await client
+    .from("organization_members")
+    .update({ work_role: input.workRole })
+    .eq("id", input.memberId)
+    .eq("organization_id", input.organizationId)
+    .select("id")
+    .maybeSingle();
+  if (error) return { error: error.message, status: 400 };
+  if (!data) return { error: "Team member not found.", status: 404 };
+  return { ok: true };
+}
+
+export async function updateOrgMemberRole(input: {
+  organizationId: string;
+  memberId: string;
+  actorUserId: string;
+  role: OrgRole;
+}): Promise<{ ok: true } | { error: string; status: number }> {
+  const client = createSupabaseAdmin();
+  if (!client) return { error: "Database admin client is not configured.", status: 503 };
+
+  const { data: member, error: lookupError } = await client
+    .from("organization_members")
+    .select("id, user_id, role")
+    .eq("id", input.memberId)
+    .eq("organization_id", input.organizationId)
+    .maybeSingle();
+  if (lookupError) return { error: lookupError.message, status: 400 };
+  if (!member) return { error: "Team member not found.", status: 404 };
+
+  if (member.role === "company_admin" && input.role === "employee") {
+    const { count } = await client
+      .from("organization_members")
+      .select("id", { count: "exact", head: true })
+      .eq("organization_id", input.organizationId)
+      .eq("role", "company_admin");
+    if ((count ?? 0) <= 1) {
+      return { error: "Cannot demote the last company admin.", status: 400 };
+    }
+  }
+
   const { error } = await client
     .from("organization_members")
-    .delete()
+    .update({ role: input.role })
     .eq("id", input.memberId)
     .eq("organization_id", input.organizationId);
-
-  if (error) return { error: error.message, status: 500 };
+  if (error) return { error: error.message, status: 400 };
   return { ok: true };
 }
 
@@ -265,7 +388,7 @@ export async function findPendingInviteForPhone(rawPhone: string): Promise<OrgIn
   const { data, error } = await client
     .from("organization_invites")
     .select(
-      "id, organization_id, phone_e164, phone_digits, role, status, invited_by_user_id, created_at, expires_at, note"
+      "id, organization_id, phone_e164, phone_digits, role, work_role, status, invited_by_user_id, created_at, expires_at, note"
     )
     .eq("phone_digits", digits)
     .eq("status", "pending")
@@ -309,6 +432,7 @@ export async function acceptInviteForUser(input: {
     organization_id: input.invite.organization_id,
     user_id: input.userId,
     role,
+    work_role: input.invite.work_role ?? "office_sales",
   });
 
   if (joinErr) {

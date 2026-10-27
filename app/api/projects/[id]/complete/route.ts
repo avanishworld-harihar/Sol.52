@@ -6,6 +6,7 @@ import { getProjectDetail } from "@/lib/project-store";
 import { logProjectActivity } from "@/lib/project-activity-logger";
 import { denyIfCrossOrg, denyIfStrictUnauthenticated, resolveOrgScope } from "@/lib/auth/org-scope";
 import { fetchProjectOrgId } from "@/lib/auth/resource-org";
+import { denyIfCannotAccessProject } from "@/lib/auth/data-access";
 
 export const dynamic = "force-dynamic";
 type RouteCtx = { params: Promise<{ id: string }> };
@@ -22,6 +23,8 @@ export async function POST(req: NextRequest, ctx: RouteCtx) {
     const denied = denyIfStrictUnauthenticated(scope);
     if (denied) return denied;
     const { id } = await ctx.params;
+    const deniedAccess = await denyIfCannotAccessProject(id, scope);
+    if (deniedAccess) return deniedAccess;
     const deniedOrg = denyIfCrossOrg(await fetchProjectOrgId(id), scope);
     if (deniedOrg) return deniedOrg;
 

@@ -1,14 +1,23 @@
 import type { NextRequest } from "next/server";
 import { readAppSession, type AppSession, type OrgRole } from "@/lib/auth/session";
+import { createSupabaseAdmin } from "@/lib/supabase-admin";
 
 export function requireAppSession(req: NextRequest): AppSession | null {
   return readAppSession(req);
 }
 
-export function requireCompanyAdmin(req: NextRequest): AppSession | null {
+export async function requireCompanyAdmin(req: NextRequest): Promise<AppSession | null> {
   const session = readAppSession(req);
   if (!session || session.orgRole !== "company_admin") return null;
-  return session;
+  const admin = createSupabaseAdmin();
+  if (!admin) return null;
+  const { data, error } = await admin
+    .from("organization_members")
+    .select("role")
+    .eq("organization_id", session.organizationId)
+    .eq("user_id", session.userId)
+    .maybeSingle();
+  return !error && data?.role === "company_admin" ? session : null;
 }
 
 export function isCompanyAdmin(session: AppSession | null | undefined): boolean {
@@ -48,8 +57,7 @@ export function roleGatesFromSession(session: AppSession | null): RoleGate {
     canManageTeam: admin,
     canManageBilling: admin,
     canEditRateCard: admin,
-    /** Wave 2: employees still see org CRM; assignment filter comes later. */
-    canSeeAllCustomers: true,
+    canSeeAllCustomers: admin,
     orgRole: session?.orgRole ?? null,
   };
 }

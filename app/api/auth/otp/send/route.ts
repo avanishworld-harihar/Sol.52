@@ -9,6 +9,7 @@ import {
   otpPendingCookieConfig,
 } from "@/lib/auth/session";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
+import { extractClientIp, tokenBucket } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -33,6 +34,17 @@ export async function POST(req: NextRequest) {
     const phone = normalizePhoneE164(body.phone);
     if (!phone) {
       return NextResponse.json({ ok: false, error: "Enter a valid mobile number." }, { status: 400 });
+    }
+    const rate = tokenBucket({
+      key: `otp:${extractClientIp(req.headers)}:${phone}`,
+      capacity: 3,
+      refillIntervalMs: 2 * 60 * 1000,
+    });
+    if (!rate.allowed) {
+      return NextResponse.json(
+        { ok: false, error: "Too many OTP requests. Please wait before trying again." },
+        { status: 429, headers: { "Retry-After": String(Math.ceil(rate.retryAfterMs / 1000)) } }
+      );
     }
 
     const code = generateOtpCode();

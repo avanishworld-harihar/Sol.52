@@ -4,6 +4,7 @@
  * Query: q, types, project_id, owner, from, to, limit, cursor
  */
 import { NextRequest, NextResponse } from "next/server";
+import { authorizeLeadFieldRequest } from "@/lib/auth/data-access";
 import { categoryIdToDb, type DocumentCategoryDb } from "@/lib/document-category-registry";
 import { listUnifiedCustomerDocuments } from "@/lib/unified-documents-store";
 import type { DocumentOwner } from "@/lib/document-category-registry";
@@ -25,6 +26,7 @@ function parseTypes(raw: string | null): DocumentCategoryDb[] | undefined {
 export async function GET(req: NextRequest, ctx: RouteCtx) {
   try {
     const { id: customerId } = await ctx.params;
+    const denied = await authorizeLeadFieldRequest(req, customerId); if (denied) return denied;
     if (!customerId?.trim()) {
       return NextResponse.json({ ok: false, error: "missing id" }, { status: 400 });
     }

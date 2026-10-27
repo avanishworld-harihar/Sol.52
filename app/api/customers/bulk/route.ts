@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-import { denyIfCrossOrg, denyIfStrictUnauthenticated, resolveOrgScope } from "@/lib/auth/org-scope";
-import { fetchLeadOrgId } from "@/lib/auth/resource-org";
+import { denyIfStrictUnauthenticated, resolveOrgScope } from "@/lib/auth/org-scope";
+import { denyIfCannotAccessLead } from "@/lib/auth/data-access";
 import { appendActivityEvent, createLeadReminder, updateLeadReminder } from "@/lib/followup-store";
 import { LEAD_STATUS_KEYS } from "@/lib/lead-status";
 import { batchNextFollowups, bumpLeadStatus } from "@/lib/supabase";
@@ -58,10 +58,9 @@ export async function POST(req: NextRequest) {
 
     // Check every resource before the first write so a mixed-org selection can
     // never partially mutate another tenant's records.
-    const orgIds = await runWithLimit(leadIds, 8, fetchLeadOrgId);
-    for (const orgId of orgIds) {
-      const deniedOrg = denyIfCrossOrg(orgId, scope);
-      if (deniedOrg) return deniedOrg;
+    const accessChecks = await runWithLimit(leadIds, 8, (leadId) => denyIfCannotAccessLead(leadId, scope));
+    for (const deniedAccess of accessChecks) {
+      if (deniedAccess) return deniedAccess;
     }
 
     let results: BulkResult[];

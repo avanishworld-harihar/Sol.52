@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { authorizeLeadRequest } from "@/lib/auth/data-access";
 import { z } from "zod";
 import { appendActivityEvent, createLeadReminder, listLeadReminders } from "@/lib/followup-store";
 
@@ -19,6 +20,7 @@ const reminderSchema = z.object({
 
 export async function GET(req: NextRequest, ctx: RouteCtx) {
   const { id } = await ctx.params;
+  const denied = await authorizeLeadRequest(req, id); if (denied) return denied;
   const url = req.nextUrl;
   const limit = Number(url.searchParams.get("limit") ?? 30);
   const offset = Number(url.searchParams.get("offset") ?? 0);
@@ -30,6 +32,7 @@ export async function GET(req: NextRequest, ctx: RouteCtx) {
 export async function POST(req: NextRequest, ctx: RouteCtx) {
   try {
     const { id } = await ctx.params;
+    const denied = await authorizeLeadRequest(req, id); if (denied) return denied;
     if (!id) return NextResponse.json({ ok: false, error: "missing id" }, { status: 400 });
     const parsed = reminderSchema.parse(await req.json());
     const created = await createLeadReminder({ lead_id: id, ...parsed });

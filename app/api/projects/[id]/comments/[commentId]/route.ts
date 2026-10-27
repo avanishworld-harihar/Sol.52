@@ -2,6 +2,7 @@
  * PATCH /api/projects/[id]/comments/[commentId] — Toggle is_pinned on a comment.
  */
 import { NextRequest, NextResponse } from "next/server";
+import { authorizeProjectRequest } from "@/lib/auth/data-access";
 import { z } from "zod";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
 import { supabase } from "@/lib/supabase";
@@ -24,6 +25,7 @@ export async function PATCH(req: NextRequest, ctx: RouteCtx) {
     if (!id || !commentId) {
       return NextResponse.json({ ok: false, error: "missing_id" }, { status: 400 });
     }
+    const denied = await authorizeProjectRequest(req, id); if (denied) return denied;
 
     const body = await req.json();
     const parsed = patchSchema.parse(body);

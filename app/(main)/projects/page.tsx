@@ -48,6 +48,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import type { FormEvent } from "react";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
+import { useAppSession } from "@/hooks/use-app-session";
 
 type ProjectsView = "active" | "completed" | "drafts" | "archived";
 
@@ -143,6 +144,18 @@ function ProjectsBoard() {
   const view = resolveView(searchParams.get("view"));
   const filters = useMemo(() => readFiltersFromParams(searchParams), [searchParams]);
   const { mutate: mutateGlobal } = useSWRConfig();
+  const { session: appSession } = useAppSession();
+  const [teamMembers, setTeamMembers] = useState<Array<{ user_id: string; phone?: string | null; role: string }>>([]);
+
+  useEffect(() => {
+    if (appSession?.gates.canManageTeam !== true) return;
+    void fetch("/api/team/members", { cache: "no-store" })
+      .then((res) => res.json())
+      .then((payload: { data?: { members?: Array<{ user_id: string; phone?: string | null; role: string }> } }) =>
+        setTeamMembers(payload.data?.members ?? [])
+      )
+      .catch(() => setTeamMembers([]));
+  }, [appSession?.gates.canManageTeam]);
 
   const [projectModal, setProjectModal] = useState<"none" | "edit">("none");
   const [editProject, setEditProject] = useState<ProjectListItem | null>(null);
@@ -154,6 +167,7 @@ function ProjectsBoard() {
     next_action: "",
     install_progress: "0",
     status: "pending" as ProjectEditStatus,
+    assigned_to_user_id: "",
   });
   const [projError, setProjError] = useState("");
   const [collectionsOpen, setCollectionsOpen] = useState(() => searchParams.get("collections") === "1");
@@ -184,6 +198,7 @@ function ProjectsBoard() {
     sortDir: filters.sortDir,
     page: filters.page,
     pageSize: filters.pageSize,
+    owner: searchParams.get("owner") === "unassigned" ? "unassigned" : null,
   });
 
   const { data, error, isLoading, mutate: mutateList } = useSWR(
@@ -268,6 +283,7 @@ function ProjectsBoard() {
       next_action: "",
       install_progress: "0",
       status: "pending",
+      assigned_to_user_id: "",
     });
   }
 
@@ -282,6 +298,7 @@ function ProjectsBoard() {
       next_action: project.next_action?.trim() ?? "",
       install_progress: String(project.install_progress ?? 0),
       status: mapPipelineStatus(project.status),
+      assigned_to_user_id: project.assigned_to_user_id ?? "",
     });
   }, []);
 
@@ -396,6 +413,7 @@ function ProjectsBoard() {
             next_action: projForm.next_action.trim() || null,
             install_progress: progress,
             status: projForm.status,
+            ...(appSession?.gates.canManageTeam ? { assigned_to_user_id: projForm.assigned_to_user_id || null } : {}),
           }),
         });
         const j = (await r.json()) as { ok?: boolean; error?: string };
@@ -436,6 +454,13 @@ function ProjectsBoard() {
             footer={<WorkflowLifecycleStrip surface="projects" />}
           />
         </WorkspaceStaggerItem>
+
+        {searchParams.get("owner") === "unassigned" ? (
+          <div className="flex items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs dark:border-amber-800 dark:bg-amber-950/30">
+            <span className="font-bold text-amber-900 dark:text-amber-100">Team Inbox · unassigned projects</span>
+            <Link href="/projects" className="font-extrabold text-amber-800 underline dark:text-amber-200">Show all</Link>
+          </div>
+        ) : null}
 
         <WorkspaceStaggerItem>
           {opsStatsLoading && !opsStats ? null : (
@@ -560,7 +585,7 @@ function ProjectsBoard() {
               view={view}
               onPatch={handlePatch}
               onEdit={openProjectCardEdit}
-              onDelete={setDeleteProjectTarget}
+              onDelete={appSession?.gates.orgRole === "company_admin" ? setDeleteProjectTarget : undefined}
             />
             <div className="page-lite-item space-y-1.5 max-sm:space-y-1 lg:hidden sm:space-y-3">
               {listRows.map((project) => (
@@ -570,7 +595,7 @@ function ProjectsBoard() {
                   view={view}
                   onPatch={handlePatch}
                   onEdit={openProjectCardEdit}
-                  onDelete={setDeleteProjectTarget}
+                  onDelete={appSession?.gates.orgRole === "company_admin" ? setDeleteProjectTarget : undefined}
                 />
               ))}
             </div>
@@ -670,6 +695,22 @@ function ProjectsBoard() {
                 <option value="active">{t("projects_statusActive")}</option>
                 <option value="done">{t("projects_statusDone")}</option>
               </FloatingLabelSelect>
+              {appSession?.gates.canManageTeam ? (
+                <FloatingLabelSelect
+                  label="Project owner"
+                  containerClassName="my-4"
+                  className={modalFloatingClass}
+                  value={projForm.assigned_to_user_id}
+                  onChange={(e) => setProjForm((p) => ({ ...p, assigned_to_user_id: e.target.value }))}
+                >
+                  <option value="">Unassigned</option>
+                  {teamMembers.map((member) => (
+                    <option key={member.user_id} value={member.user_id}>
+                      {member.phone || member.user_id.slice(0, 8)} · {member.role === "company_admin" ? "Admin" : "Employee"}
+                    </option>
+                  ))}
+                </FloatingLabelSelect>
+              ) : null}
               {projError ? <p className="text-sm font-semibold text-red-600">{projError}</p> : null}
               <button
                 type="submit"

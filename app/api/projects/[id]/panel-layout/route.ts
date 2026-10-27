@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { authorizeProjectRequest } from "@/lib/auth/data-access";
 import { z } from "zod";
 import { assertProjectDesignStudioAccess } from "@/lib/billing/design-studio-entitlements";
 import { isBillingEntitlementError } from "@/lib/billing/errors";
@@ -23,9 +24,10 @@ function migrationMissing(message: string): boolean {
   );
 }
 
-export async function GET(_req: NextRequest, ctx: RouteCtx) {
+export async function GET(req: NextRequest, ctx: RouteCtx) {
   try {
     const { id } = await ctx.params;
+    const denied = await authorizeProjectRequest(req, id); if (denied) return denied;
     if (!id) {
       return NextResponse.json({ ok: false, error: "missing_id" }, { status: 400 });
     }
@@ -66,6 +68,7 @@ export async function GET(_req: NextRequest, ctx: RouteCtx) {
 export async function PUT(req: NextRequest, ctx: RouteCtx) {
   try {
     const { id } = await ctx.params;
+    const denied = await authorizeProjectRequest(req, id); if (denied) return denied;
     if (!id) {
       return NextResponse.json({ ok: false, error: "missing_id" }, { status: 400 });
     }

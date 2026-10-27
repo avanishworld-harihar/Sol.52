@@ -10,8 +10,8 @@ import {
   ensureProjectForWonLead,
   isWonLeadStatus,
 } from "@/lib/project-store";
-import { denyIfCrossOrg, denyIfStrictUnauthenticated, resolveOrgScope } from "@/lib/auth/org-scope";
-import { fetchLeadOrgId } from "@/lib/auth/resource-org";
+import { denyIfStrictUnauthenticated, resolveOrgScope } from "@/lib/auth/org-scope";
+import { denyIfCannotAccessLead, isOrganizationMemberUser, mayChooseAssignee } from "@/lib/auth/data-access";
 
 export const dynamic = "force-dynamic";
 
@@ -26,10 +26,8 @@ export async function GET(req: NextRequest, ctx: RouteCtx) {
     const { id } = await ctx.params;
     if (!id) return NextResponse.json({ ok: false, error: "missing id" }, { status: 400 });
 
-    const leadOrg = await fetchLeadOrgId(id);
-    const deniedOrg = denyIfCrossOrg(leadOrg, scope);
-    if (deniedOrg) return deniedOrg;
-
+    const deniedAccess = await denyIfCannotAccessLead(id, scope);
+    if (deniedAccess) return deniedAccess;
     const db = createSupabaseAdmin() ?? supabase;
     if (!db) return NextResponse.json({ ok: false, error: "db_unavailable" }, { status: 503 });
     const leadsTable = await resolveLeadsTable();
@@ -121,7 +119,8 @@ const patchSchema = z
     survey_status: z.string().max(40).optional().nullable(),
     area: z.enum(["urban", "rural"]).optional().nullable(),
     location: z.string().max(200).optional().nullable(),
-    connection_type: z.string().max(40).optional().nullable()
+    connection_type: z.string().max(40).optional().nullable(),
+    assigned_to_user_id: z.string().uuid().optional().nullable()
   })
   .refine((v) => Object.keys(v).length > 0, { message: "Empty patch" });
 
@@ -135,9 +134,8 @@ export async function PATCH(req: NextRequest, ctx: RouteCtx) {
     const id = decodeURIComponent(String(rawId ?? "")).trim();
     if (!id) return NextResponse.json({ ok: false, error: "missing id" }, { status: 400 });
 
-    const leadOrg = await fetchLeadOrgId(id);
-    const deniedOrg = denyIfCrossOrg(leadOrg, scope);
-    if (deniedOrg) return deniedOrg;
+    const deniedAccess = await denyIfCannotAccessLead(id, scope);
+    if (deniedAccess) return deniedAccess;
 
     const body = (await req.json()) as Record<string, unknown>;
     /** Soften client payloads so Zod does not reject common empty/invalid optionals. */
@@ -161,6 +159,18 @@ export async function PATCH(req: NextRequest, ctx: RouteCtx) {
     }
 
     const patch = patchSchema.parse(body);
+    if (patch.assigned_to_user_id !== undefined) {
+      if (!mayChooseAssignee(scope)) {
+        return NextResponse.json({ ok: false, error: "Only company admin can reassign leads." }, { status: 403 });
+      }
+      if (
+        patch.assigned_to_user_id &&
+        scope.organizationId &&
+        !(await isOrganizationMemberUser(scope.organizationId, patch.assigned_to_user_id))
+      ) {
+        return NextResponse.json({ ok: false, error: "Assignee is not a member of this organization." }, { status: 400 });
+      }
+    }
 
     /**
      * Status transitions go through `bumpLeadStatus` so `last_touched_at` is
@@ -343,9 +353,11 @@ export async function DELETE(req: NextRequest, ctx: RouteCtx) {
     const id = decodeURIComponent(String(rawId ?? "")).trim();
     if (!id) return NextResponse.json({ ok: false, error: "missing id" }, { status: 400 });
 
-    const leadOrg = await fetchLeadOrgId(id);
-    const deniedOrg = denyIfCrossOrg(leadOrg, scope);
-    if (deniedOrg) return deniedOrg;
+    const deniedAccess = await denyIfCannotAccessLead(id, scope);
+    if (deniedAccess) return deniedAccess;
+    if (scope.mode === "session" && scope.session?.orgRole !== "company_admin") {
+      return NextResponse.json({ ok: false, error: "Only company admin can permanently delete a lead." }, { status: 403 });
+    }
 
     const admin = createSupabaseAdmin();
     const db = admin ?? supabase;

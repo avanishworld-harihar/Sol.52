@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { authorizeLeadFieldRequest } from "@/lib/auth/data-access";
 import { z } from "zod";
 import { appendActivityEvent, createLeadVisit, listLeadVisits } from "@/lib/followup-store";
 
@@ -15,6 +16,7 @@ const visitSchema = z.object({
 
 export async function GET(req: NextRequest, ctx: RouteCtx) {
   const { id } = await ctx.params;
+  const denied = await authorizeLeadFieldRequest(req, id); if (denied) return denied;
   const url = req.nextUrl;
   const limit = Number(url.searchParams.get("limit") ?? 30);
   const offset = Number(url.searchParams.get("offset") ?? 0);
@@ -26,6 +28,7 @@ export async function GET(req: NextRequest, ctx: RouteCtx) {
 export async function POST(req: NextRequest, ctx: RouteCtx) {
   try {
     const { id } = await ctx.params;
+    const denied = await authorizeLeadFieldRequest(req, id); if (denied) return denied;
     if (!id) return NextResponse.json({ ok: false, error: "missing id" }, { status: 400 });
     const parsed = visitSchema.parse(await req.json());
     const created = await createLeadVisit({ lead_id: id, ...parsed });

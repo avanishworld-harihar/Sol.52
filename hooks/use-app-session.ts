@@ -15,6 +15,7 @@ export type AppSessionState = {
   phone?: string;
   organizationName?: string | null;
   orgRole?: string;
+  workRole?: "office_sales" | "field_staff" | "hybrid" | null;
   gates: AppSessionGates;
 };
 
@@ -22,7 +23,7 @@ const defaultGates: AppSessionGates = {
   canManageTeam: false,
   canManageBilling: false,
   canEditRateCard: false,
-  canSeeAllCustomers: true,
+  canSeeAllCustomers: false,
   orgRole: null,
 };
 

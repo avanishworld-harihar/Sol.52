@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { authorizeProjectRequest } from "@/lib/auth/data-access";
 import { assertProjectSldAccess } from "@/lib/billing/design-studio-entitlements";
 import { isBillingEntitlementError } from "@/lib/billing/errors";
 import { ensureSldPackShareToken } from "@/lib/design-studio-sld-share";
@@ -14,6 +15,7 @@ type RouteCtx = { params: Promise<{ id: string }> };
 export async function POST(req: NextRequest, ctx: RouteCtx) {
   try {
     const { id } = await ctx.params;
+    const denied = await authorizeProjectRequest(req, id); if (denied) return denied;
     if (!id) {
       return NextResponse.json({ ok: false, error: "missing_id" }, { status: 400 });
     }

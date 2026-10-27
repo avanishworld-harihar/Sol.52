@@ -9,6 +9,9 @@ import {
   listOrgMembers,
   listPendingInvites,
   removeOrgMember,
+  updateOrgMemberRole,
+  updateOrgMemberWorkRole,
+  getTeamWorkSummary,
 } from "@/lib/team/invites";
 import { countOrgMembers, getOrgSubscription } from "@/lib/billing";
 
@@ -16,7 +19,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   try {
-    const adminSession = requireCompanyAdmin(req);
+    const adminSession = await requireCompanyAdmin(req);
     if (!adminSession) {
       // Soft: if not signed in as admin, return summary-only for billing card OR 401
       const orgId = await resolveOrgIdForRequest(req);
@@ -50,12 +53,13 @@ export async function GET(req: NextRequest) {
     }
 
     const orgId = adminSession.organizationId;
-    const [members, invites, memberCount, pendingCount, sub] = await Promise.all([
+    const [members, invites, memberCount, pendingCount, sub, workSummary] = await Promise.all([
       listOrgMembers(orgId),
       listPendingInvites(orgId),
       countOrgMembers(orgId),
       countPendingInvites(orgId),
       getOrgSubscription(orgId),
+      getTeamWorkSummary(orgId),
     ]);
 
     const maxUsers = sub?.plan.max_users ?? sub?.plan.features.max_users ?? 1;
@@ -74,6 +78,7 @@ export async function GET(req: NextRequest) {
           planCode: sub?.plan.code ?? null,
           members,
           invites,
+          workSummary,
         },
       },
       { headers: { "Cache-Control": "no-store" } }
@@ -87,12 +92,13 @@ export async function GET(req: NextRequest) {
 const postSchema = z.object({
   phone: z.string().min(8).max(20),
   role: z.enum(["company_admin", "employee"]).default("employee"),
+  workRole: z.enum(["office_sales", "field_staff", "hybrid"]).default("office_sales"),
   note: z.string().max(200).optional().nullable(),
 });
 
 export async function POST(req: NextRequest) {
   try {
-    const adminSession = requireCompanyAdmin(req);
+    const adminSession = await requireCompanyAdmin(req);
     if (!adminSession) {
       return NextResponse.json(
         { ok: false, error: "Only company admin can invite team members. Sign in first." },
@@ -105,6 +111,7 @@ export async function POST(req: NextRequest) {
       organizationId: adminSession.organizationId,
       phone: body.phone,
       role: body.role,
+      workRole: body.workRole,
       invitedByUserId: adminSession.userId,
       note: body.note ?? null,
     });
@@ -139,11 +146,49 @@ export async function POST(req: NextRequest) {
 const deleteSchema = z.object({
   memberId: z.string().uuid().optional(),
   inviteId: z.string().uuid().optional(),
+  reassignToUserId: z.string().uuid().optional().nullable(),
 });
+
+const patchSchema = z.object({
+  memberId: z.string().uuid(),
+  role: z.enum(["company_admin", "employee"]).optional(),
+  workRole: z.enum(["office_sales", "field_staff", "hybrid"]).optional(),
+}).refine((value) => value.role !== undefined || value.workRole !== undefined, {
+  message: "Provide role or workRole.",
+});
+
+export async function PATCH(req: NextRequest) {
+  try {
+    const adminSession = await requireCompanyAdmin(req);
+    if (!adminSession) {
+      return NextResponse.json({ ok: false, error: "Only company admin can change roles." }, { status: 403 });
+    }
+    const body = patchSchema.parse(await req.json());
+    const result = body.role
+      ? await updateOrgMemberRole({
+          organizationId: adminSession.organizationId,
+          memberId: body.memberId,
+          actorUserId: adminSession.userId,
+          role: body.role,
+        })
+      : await updateOrgMemberWorkRole({
+          organizationId: adminSession.organizationId,
+          memberId: body.memberId,
+          workRole: body.workRole!,
+        });
+    if ("error" in result) {
+      return NextResponse.json({ ok: false, error: result.error }, { status: result.status });
+    }
+    return NextResponse.json({ ok: true });
+  } catch (e) {
+    const message = e instanceof z.ZodError ? e.message : e instanceof Error ? e.message : "role_update_failed";
+    return NextResponse.json({ ok: false, error: message }, { status: 400 });
+  }
+}
 
 export async function DELETE(req: NextRequest) {
   try {
-    const adminSession = requireCompanyAdmin(req);
+    const adminSession = await requireCompanyAdmin(req);
     if (!adminSession) {
       return NextResponse.json({ ok: false, error: "Only company admin can manage team." }, { status: 403 });
     }
@@ -165,11 +210,18 @@ export async function DELETE(req: NextRequest) {
         organizationId: adminSession.organizationId,
         memberId: body.memberId,
         actorUserId: adminSession.userId,
+        reassignToUserId: body.reassignToUserId ?? null,
       });
       if ("error" in result) {
         return NextResponse.json({ ok: false, error: result.error }, { status: result.status });
       }
-      return NextResponse.json({ ok: true, removed: true });
+      return NextResponse.json({
+        ok: true,
+        removed: true,
+        leadsMoved: result.leadsMoved,
+        projectsMoved: result.projectsMoved,
+        fieldAssignmentsMoved: result.fieldAssignmentsMoved,
+      });
     }
 
     return NextResponse.json({ ok: false, error: "Provide memberId or inviteId." }, { status: 400 });

@@ -7,6 +7,7 @@ import { LanguageToggle } from "@/components/language-toggle";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
 import { useEffect } from "react";
+import { AccountQuickMenu } from "@/components/account-quick-menu";
 
 /** Full-width on small screens; capped width + horizontal padding on large screens (SaaS layout). */
 export function pageContainerClass(extra?: string) {
@@ -50,6 +51,7 @@ export function AppShell({ title, children }: { title: string; children: React.R
             <div className="flex shrink-0 items-center gap-2 sm:gap-3">
               <ThemeToggle />
               <LanguageToggle />
+              <AccountQuickMenu />
             </div>
           </div>
         </div>

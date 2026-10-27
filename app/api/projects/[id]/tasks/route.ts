@@ -8,6 +8,7 @@ import { createSupabaseAdmin } from "@/lib/supabase-admin";
 import { supabase } from "@/lib/supabase";
 import { listProjectTasks } from "@/lib/project-store";
 import { isProjectStageId } from "@/lib/project-stages";
+import { authorizeProjectRequest } from "@/lib/auth/data-access";
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +41,7 @@ export async function GET(req: NextRequest, ctx: RouteCtx) {
   try {
     const { id } = await ctx.params;
     if (!id) return NextResponse.json({ ok: false, error: "missing_id" }, { status: 400 });
+    const denied = await authorizeProjectRequest(req, id); if (denied) return denied;
 
     const stageParam = req.nextUrl.searchParams.get("stage");
     const stage =
@@ -66,6 +68,7 @@ export async function POST(req: NextRequest, ctx: RouteCtx) {
   try {
     const { id } = await ctx.params;
     if (!id) return NextResponse.json({ ok: false, error: "missing_id" }, { status: 400 });
+    const denied = await authorizeProjectRequest(req, id); if (denied) return denied;
 
     const body = await req.json();
     const parsed = postSchema.parse(body);

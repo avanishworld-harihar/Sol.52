@@ -11,6 +11,7 @@
  * Returns 400 if project is already at 'completed' (no further advance).
  */
 import { NextRequest, NextResponse } from "next/server";
+import { authorizeProjectRequest } from "@/lib/auth/data-access";
 import { z } from "zod";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
 import { supabase } from "@/lib/supabase";
@@ -55,6 +56,7 @@ const postSchema = z.object({
 export async function POST(req: NextRequest, ctx: RouteCtx) {
   try {
     const { id } = await ctx.params;
+    const denied = await authorizeProjectRequest(req, id); if (denied) return denied;
     if (!id) return NextResponse.json({ ok: false, error: "missing_id" }, { status: 400 });
 
     const body = await req.json().catch(() => ({}));

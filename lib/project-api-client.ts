@@ -122,6 +122,7 @@ export interface ProjectListItem {
   id: string;
   lead_id: string | null;
   organization_id: string | null;
+  assigned_to_user_id: string | null;
   official_name: string | null;
   current_stage: string;
   stage_status: string;

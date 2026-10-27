@@ -49,6 +49,7 @@ import {
 import type { FollowupReminder } from "@/lib/followup-types";
 import type { CustomerTimelineItem } from "@/lib/customer-timeline-store";
 import { CustomerDocumentsHub } from "@/components/customers/customer-documents-hub";
+import { LeadFieldAssignmentCard } from "@/components/field-work/lead-field-assignment-card";
 import { QuickQuoteLauncher } from "@/components/proposals/quick-quote-launcher";
 import { ScheduleCallbackSheet } from "@/components/crm/schedule-callback-sheet";
 import { CallbackStatusBadge } from "@/components/crm/callback-status-badge";
@@ -556,6 +557,8 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
           </div>
         </div>
       </SectionCard>
+
+      <LeadFieldAssignmentCard leadId={leadId} />
 
       <QuickQuoteLauncher
         leadId={leadId}

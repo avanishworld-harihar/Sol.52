@@ -81,6 +81,9 @@ export function AccountSessionCard() {
             {data.phone ? displayPhone(data.phone) : "Signed in"}
             {data.orgRole ? ` · ${data.orgRole === "company_admin" ? "Admin" : "Employee"}` : ""}
           </p>
+          <p className="mt-2 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
+            One OTP keeps this device signed in for up to 30 days.
+          </p>
           <button
             type="button"
             disabled={busy}

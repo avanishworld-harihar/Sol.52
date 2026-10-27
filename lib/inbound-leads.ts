@@ -48,6 +48,9 @@ export type InboundLeadInput = {
   consumerName?: string | null;
   /** Tenant — when set, phone dedupe stays inside this org (Sol.52 ≠ Harihar). */
   organizationId?: string | null;
+  /** Employee ownership. Admins may assign another org member. */
+  assignedToUserId?: string | null;
+  createdByUserId?: string | null;
 };
 
 export type InboundLeadResult = {
@@ -146,6 +149,8 @@ export async function processInboundLead(input: InboundLeadInput): Promise<Inbou
         ? { connection_type: input.connection_type.trim().toLowerCase() }
         : {}),
       ...(input.organizationId ? { organization_id: input.organizationId } : {}),
+      ...(input.assignedToUserId ? { assigned_to_user_id: input.assignedToUserId } : {}),
+      ...(input.createdByUserId ? { created_by_user_id: input.createdByUserId } : {}),
     };
     const refreshed = await refreshLeadFromInbound(String(existing.id), customerInput);
     return { deduped: true, data: refreshed ?? existing };
@@ -203,6 +208,8 @@ export async function processInboundLead(input: InboundLeadInput): Promise<Inbou
       ? { connection_type: input.connection_type.trim().toLowerCase() }
       : {}),
     ...(input.organizationId ? { organization_id: input.organizationId } : {}),
+    ...(input.assignedToUserId ? { assigned_to_user_id: input.assignedToUserId } : {}),
+    ...(input.createdByUserId ? { created_by_user_id: input.createdByUserId } : {}),
   };
 
   try {

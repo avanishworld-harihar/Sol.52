@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { authorizeProjectRequest } from "@/lib/auth/data-access";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
 import { supabase } from "@/lib/supabase";
 import { logProjectActivity } from "@/lib/project-activity-logger";
@@ -16,9 +17,10 @@ function db() {
  * Lightweight customer design sign-off: complete matching CRM task + stamp project.
  * Not a legal e-sign flow.
  */
-export async function POST(_req: NextRequest, ctx: RouteCtx) {
+export async function POST(req: NextRequest, ctx: RouteCtx) {
   try {
     const { id: projectId } = await ctx.params;
+    const denied = await authorizeProjectRequest(req, projectId); if (denied) return denied;
     if (!projectId) {
       return NextResponse.json({ ok: false, error: "missing_id" }, { status: 400 });
     }

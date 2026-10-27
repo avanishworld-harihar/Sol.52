@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { readAppSession, type AppSession } from "@/lib/auth/session";
 import { resolveDefaultOrgId } from "@/lib/project-store";
+import { createSupabaseAdmin } from "@/lib/supabase-admin";
 
 export type OrgScopeMode = "session" | "legacy";
 
@@ -21,16 +22,46 @@ export type OrgScope = {
  * strict: CRM APIs require a signed-in org session (AUTH_ORG_ISOLATION=strict).
  */
 export function isOrgIsolationStrict(): boolean {
-  const v = (process.env.AUTH_ORG_ISOLATION ?? "").trim().toLowerCase();
+  const configured = process.env.AUTH_ORG_ISOLATION;
+  if (configured == null || configured.trim() === "") return process.env.NODE_ENV === "production";
+  const v = configured.trim().toLowerCase();
   return v === "strict" || v === "1" || v === "true" || v === "yes";
 }
 
 export async function resolveOrgScope(req: NextRequest): Promise<OrgScope> {
-  const session = readAppSession(req);
+  const presentedSession = readAppSession(req);
+  let session = presentedSession;
+  if (session?.organizationId) {
+    const admin = createSupabaseAdmin();
+    if (admin) {
+      const { data, error } = await admin
+        .from("organization_members")
+        .select("role")
+        .eq("organization_id", session.organizationId)
+        .eq("user_id", session.userId)
+        .maybeSingle();
+      if (error || !data) {
+        session = null;
+      } else {
+        session = {
+          ...session,
+          orgRole: data.role === "company_admin" ? "company_admin" : "employee",
+        };
+      }
+    }
+  }
   if (session?.organizationId) {
     return {
       organizationId: session.organizationId,
       session,
+      mode: "session",
+      includeUnscopedRows: false,
+    };
+  }
+  if (presentedSession && !session) {
+    return {
+      organizationId: null,
+      session: null,
       mode: "session",
       includeUnscopedRows: false,
     };
@@ -46,6 +77,12 @@ export async function resolveOrgScope(req: NextRequest): Promise<OrgScope> {
 
 /** 401 when strict isolation is on and there is no subscriber session. */
 export function denyIfStrictUnauthenticated(scope: OrgScope): NextResponse | null {
+  if (scope.mode === "session" && !scope.organizationId) {
+    return NextResponse.json(
+      { ok: false, error: "Your company access has been removed. Sign in again.", code: "membership_revoked" },
+      { status: 401 }
+    );
+  }
   if (!isOrgIsolationStrict()) return null;
   if (scope.mode === "session" && scope.organizationId) return null;
   return NextResponse.json(

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { appendActivityEvent, createLeadNote, listLeadNotes } from "@/lib/followup-store";
+import { authorizeLeadFieldRequest } from "@/lib/auth/data-access";
 
 type RouteCtx = { params: Promise<{ id: string }> };
 export const dynamic = "force-dynamic";
@@ -28,6 +29,7 @@ export async function GET(req: NextRequest, ctx: RouteCtx) {
   const limit = Number(url.searchParams.get("limit") ?? 30);
   const offset = Number(url.searchParams.get("offset") ?? 0);
   if (!id) return NextResponse.json({ ok: false, error: "missing id" }, { status: 400 });
+  const denied = await authorizeLeadFieldRequest(req, id); if (denied) return denied;
   const data = await listLeadNotes(id, { limit, offset });
   return NextResponse.json({ ok: true, data });
 }
@@ -36,6 +38,7 @@ export async function POST(req: NextRequest, ctx: RouteCtx) {
   try {
     const { id } = await ctx.params;
     if (!id) return NextResponse.json({ ok: false, error: "missing id" }, { status: 400 });
+    const denied = await authorizeLeadFieldRequest(req, id); if (denied) return denied;
     const parsed = noteSchema.parse(await req.json());
     const created = await createLeadNote({ lead_id: id, ...parsed });
     if (!created) return NextResponse.json({ ok: false, error: "create_failed" }, { status: 400 });

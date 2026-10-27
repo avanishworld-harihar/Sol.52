@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { authorizeProjectRequest } from "@/lib/auth/data-access";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
 import { supabase } from "@/lib/supabase";
 import type { ProjectSiteLayout } from "@/lib/site-layout";
@@ -11,9 +12,10 @@ function db() {
   return createSupabaseAdmin() ?? supabase;
 }
 
-export async function GET(_req: NextRequest, ctx: RouteCtx) {
+export async function GET(req: NextRequest, ctx: RouteCtx) {
   try {
     const { id } = await ctx.params;
+    const denied = await authorizeProjectRequest(req, id); if (denied) return denied;
     if (!id) return NextResponse.json({ ok: false, error: "missing_id" }, { status: 400 });
     const client = db();
     if (!client) return NextResponse.json({ ok: false, error: "db_unavailable" }, { status: 503 });

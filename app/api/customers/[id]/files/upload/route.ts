@@ -4,6 +4,8 @@ import { appendActivityEvent } from "@/lib/followup-store";
 import type { CustomerFileType } from "@/lib/customer-file-upload";
 import { writeCustomerHubCategoryUpload, writeCustomerFileUpload } from "@/lib/document-write-router";
 import { isProjectDocumentCategory, type ProjectDocumentCategory } from "@/lib/project-document-types";
+import { authorizeLeadFieldRequest } from "@/lib/auth/data-access";
+import { resolveOrgScope } from "@/lib/auth/org-scope";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -20,6 +22,8 @@ export async function POST(req: NextRequest, ctx: RouteCtx) {
   try {
     const { id: leadId } = await ctx.params;
     if (!leadId) return NextResponse.json({ ok: false, error: "missing id" }, { status: 400 });
+    const denied = await authorizeLeadFieldRequest(req, leadId); if (denied) return denied;
+    const scope = await resolveOrgScope(req);
 
     const form = await req.formData();
     const file = form.get("file");
@@ -37,6 +41,7 @@ export async function POST(req: NextRequest, ctx: RouteCtx) {
     if (typeof hubCategoryRaw === "string" && hubCategoryRaw.trim()) {
       const hubCategory = hubCategorySchema.parse(hubCategoryRaw.trim());
       result = await writeCustomerHubCategoryUpload({
+        organizationId: scope.organizationId,
         leadId,
         docCategory: hubCategory as ProjectDocumentCategory,
         fileBuffer: bytes,
@@ -46,6 +51,7 @@ export async function POST(req: NextRequest, ctx: RouteCtx) {
     } else {
       const fileType = fileTypeSchema.parse(typeof fileTypeRaw === "string" ? fileTypeRaw : "document");
       result = await writeCustomerFileUpload({
+        organizationId: scope.organizationId,
         leadId,
         fileBuffer: bytes,
         mimeType,

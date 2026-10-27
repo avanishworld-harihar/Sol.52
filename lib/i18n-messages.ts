@@ -12,6 +12,7 @@ export const EN = {
 
   nav_dashboard: "Dashboard",
   nav_customers: "Customer",
+  nav_field_work: "Field Work",
   nav_projects: "Projects",
   nav_proposals: "Proposals",
   nav_proposal: "Proposal",
@@ -597,6 +598,7 @@ export const EN = {
 export const HI: Partial<Record<keyof typeof EN, string>> = {
   nav_proposals: "प्रस्ताव",
   nav_customers: "ग्राहक",
+  nav_field_work: "फील्ड वर्क",
   nav_more: "More",
   actions_save: "सेव करें",
   actions_close: "बंद करें",
@@ -921,6 +923,7 @@ export const HI: Partial<Record<keyof typeof EN, string>> = {
 export const TA: Partial<Record<keyof typeof EN, string>> = {
   nav_proposals: "முன்மொழிவுகள்",
   nav_customers: "வாடிக்கையாளர்",
+  nav_field_work: "களப் பணி",
   nav_more: "More",
   actions_save: "சேமி",
   actions_close: "மூடு",

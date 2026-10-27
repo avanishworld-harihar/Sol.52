@@ -4,6 +4,7 @@ import {
   listOutstandingCollections,
 } from "@/lib/project-store";
 import { denyIfStrictUnauthenticated, resolveOrgScope } from "@/lib/auth/org-scope";
+import { employeeAssignmentUserId } from "@/lib/auth/data-access";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +15,8 @@ export async function GET(req: NextRequest) {
     if (denied) return denied;
 
     const orgId = scope.organizationId;
-    const stats = await getProjectDashboardStats(orgId);
+    const assignedToUserId = employeeAssignmentUserId(scope);
+    const stats = await getProjectDashboardStats(orgId, assignedToUserId);
     if (!stats) {
       return NextResponse.json(
         { ok: false, error: "db_unavailable" },
@@ -30,7 +32,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const collections = await listOutstandingCollections(orgId);
+    const collections = await listOutstandingCollections(orgId, assignedToUserId);
     return NextResponse.json(
       { ok: true, data: { ...stats, collections } },
       { headers: { "Cache-Control": "no-store" } }

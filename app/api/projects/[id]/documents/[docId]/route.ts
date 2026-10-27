@@ -4,6 +4,7 @@
  * DELETE /api/projects/[id]/documents/[docId] — Soft-archive + remove storage object
  */
 import { NextRequest, NextResponse } from "next/server";
+import { authorizeProjectRequest } from "@/lib/auth/data-access";
 import { z } from "zod";
 import { removeProjectDocumentFile } from "@/lib/project-document-upload";
 import {
@@ -32,6 +33,7 @@ function permissionQuery(req: NextRequest) {
 export async function GET(req: NextRequest, ctx: RouteCtx) {
   try {
     const { id: projectId, docId } = await ctx.params;
+    const denied = await authorizeProjectRequest(req, projectId); if (denied) return denied;
     if (!projectId || !docId) {
       return NextResponse.json({ ok: false, error: "missing_id" }, { status: 400 });
     }
@@ -76,6 +78,7 @@ const patchSchema = z.object({
 export async function PATCH(req: NextRequest, ctx: RouteCtx) {
   try {
     const { id: projectId, docId } = await ctx.params;
+    const denied = await authorizeProjectRequest(req, projectId); if (denied) return denied;
     if (!projectId || !docId) {
       return NextResponse.json({ ok: false, error: "missing_id" }, { status: 400 });
     }
@@ -132,6 +135,7 @@ export async function PATCH(req: NextRequest, ctx: RouteCtx) {
 export async function DELETE(req: NextRequest, ctx: RouteCtx) {
   try {
     const { id: projectId, docId } = await ctx.params;
+    const denied = await authorizeProjectRequest(req, projectId); if (denied) return denied;
     if (!projectId || !docId) {
       return NextResponse.json({ ok: false, error: "missing_id" }, { status: 400 });
     }

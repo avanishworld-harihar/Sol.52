@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { authorizeLeadRequest } from "@/lib/auth/data-access";
 import { z } from "zod";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
 import { supabase, touchLead } from "@/lib/supabase";
@@ -32,9 +33,10 @@ const postSchema = z.object({
   notes: z.string().max(2000).optional().nullable(),
 });
 
-export async function GET(_req: NextRequest, ctx: RouteCtx) {
+export async function GET(req: NextRequest, ctx: RouteCtx) {
   try {
     const { id } = await ctx.params;
+    const denied = await authorizeLeadRequest(req, id); if (denied) return denied;
     if (!id) return NextResponse.json({ ok: false, error: "missing id" }, { status: 400 });
     const client = db();
     if (!client) return NextResponse.json({ ok: false, error: "db_unavailable" }, { status: 503 });
@@ -64,6 +66,7 @@ export async function GET(_req: NextRequest, ctx: RouteCtx) {
 export async function POST(req: NextRequest, ctx: RouteCtx) {
   try {
     const { id } = await ctx.params;
+    const denied = await authorizeLeadRequest(req, id); if (denied) return denied;
     if (!id) return NextResponse.json({ ok: false, error: "missing id" }, { status: 400 });
     const client = db();
     if (!client) return NextResponse.json({ ok: false, error: "db_unavailable" }, { status: 503 });

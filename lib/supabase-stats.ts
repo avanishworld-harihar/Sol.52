@@ -51,7 +51,7 @@ const KW_COLS = ["installed_kw", "system_kw", "solar_kw", "kw"] as const;
 const REV_COLS = ["revenue", "amount", "total_amount", "net_cost", "price"] as const;
 const PEND_COLS = ["pending_payment", "pending_amount", "balance_due", "due_amount"] as const;
 
-async function aggregateFromProjects(): Promise<{
+async function aggregateFromProjects(opts?: { organizationId?: string | null; assignedToUserId?: string | null }): Promise<{
   installedKw: number;
   revenue: number;
   pendingPayments: number;
@@ -59,7 +59,10 @@ async function aggregateFromProjects(): Promise<{
   if (!supabase) return { installedKw: 0, revenue: 0, pendingPayments: 0 };
 
   const selectList = [...KW_COLS, ...REV_COLS, ...PEND_COLS].join(",");
-  const { data, error } = await supabase.from("projects").select(selectList).limit(250);
+  let query = supabase.from("projects").select(selectList);
+  if (opts?.organizationId) query = query.eq("organization_id", opts.organizationId);
+  if (opts?.assignedToUserId) query = query.eq("assigned_to_user_id", opts.assignedToUserId);
+  const { data, error } = await query.limit(250);
   if (error || !data?.length) return { installedKw: 0, revenue: 0, pendingPayments: 0 };
 
   let installedKw = 0;
@@ -115,8 +118,8 @@ function formatCapacity(capacityRaw: string | null): string {
   return `${capacity} kW`;
 }
 
-async function getRecentActiveProjects(): Promise<DashboardRecentProject[]> {
-  const rows = await listPipelineProjects();
+async function getRecentActiveProjects(opts?: { organizationId?: string | null; assignedToUserId?: string | null }): Promise<DashboardRecentProject[]> {
+  const rows = await listPipelineProjects(opts);
   if (!rows.length) return [];
 
   return rows
@@ -176,7 +179,11 @@ export interface DashboardStatsResult {
   };
 }
 
-export async function getDashboardStatsFast(): Promise<DashboardStatsResult> {
+export async function getDashboardStatsFast(opts?: {
+  organizationId?: string | null;
+  includeNullOrg?: boolean;
+  assignedToUserId?: string | null;
+}): Promise<DashboardStatsResult> {
   if (!supabase) {
     return {
       totalLeads: 0,
@@ -191,17 +198,21 @@ export async function getDashboardStatsFast(): Promise<DashboardStatsResult> {
   }
 
   const [leadsRows, proposalsInfo, ordersInfo, aggregates, recentProjects] = await Promise.all([
-    listCustomers(),
+    listCustomers(opts),
     countWithFallback(["proposals"]),
     countWithFallback(["projects"]),
-    aggregateFromProjects(),
-    getRecentActiveProjects()
+    aggregateFromProjects(opts),
+    getRecentActiveProjects(opts)
   ]);
 
   return {
     totalLeads: leadsRows.length,
-    proposalsSent: proposalsInfo.count,
-    orders: ordersInfo.count,
+    proposalsSent: opts?.assignedToUserId
+      ? leadsRows.filter((row) => ["proposal-sent", "proposal_sent", "proposalsent"].includes(String(row.status ?? ""))).length
+      : proposalsInfo.count,
+    orders: opts?.assignedToUserId
+      ? (await listPipelineProjects(opts)).length
+      : ordersInfo.count,
     installedKw: aggregates.installedKw,
     revenue: aggregates.revenue,
     pendingPayments: aggregates.pendingPayments,

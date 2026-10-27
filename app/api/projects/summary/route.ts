@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { denyIfStrictUnauthenticated, resolveOrgScope } from "@/lib/auth/org-scope";
 import { getProjectViewCounts } from "@/lib/project-store";
+import { employeeAssignmentUserId } from "@/lib/auth/data-access";
 
 export const dynamic = "force-dynamic";
 
@@ -9,7 +10,7 @@ export async function GET(req: NextRequest) {
     const scope = await resolveOrgScope(req);
     const denied = denyIfStrictUnauthenticated(scope);
     if (denied) return denied;
-    const data = await getProjectViewCounts(scope.organizationId);
+    const data = await getProjectViewCounts(scope.organizationId, employeeAssignmentUserId(scope));
     if (!data) return NextResponse.json({ ok: false, error: "db_unavailable" }, { status: 503 });
     return NextResponse.json({ ok: true, data }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {

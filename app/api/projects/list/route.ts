@@ -4,6 +4,8 @@ import { isProjectStageId } from "@/lib/project-stages";
 import { denyIfStrictUnauthenticated, resolveOrgScope } from "@/lib/auth/org-scope";
 import { applyProjectListPipeline, DEFAULT_LIST_FILTERS, type ProjectListFilters } from "@/lib/project-list-utils";
 import type { ProjectHealth } from "@/lib/project-health";
+import { employeeAssignmentUserId } from "@/lib/auth/data-access";
+import { mayChooseAssignee } from "@/lib/auth/data-access";
 
 export const dynamic = "force-dynamic";
 
@@ -43,6 +45,8 @@ export async function GET(req: NextRequest) {
     const rows = await listProjects({
       organizationId: orgId,
       includeNullOrg: scope.includeUnscopedRows,
+      assignedToUserId: employeeAssignmentUserId(scope),
+      unassignedOnly: url.searchParams.get("owner") === "unassigned" && mayChooseAssignee(scope),
       stage,
       view,
       limit: paged ? 5000 : limit,

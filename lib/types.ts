@@ -6,6 +6,8 @@
  */
 export type CustomerLead = {
   id: string;
+  assigned_to_user_id?: string | null;
+  created_by_user_id?: string | null;
   /** Lead name: person we met / talked with in the field. */
   name: string;
   /**

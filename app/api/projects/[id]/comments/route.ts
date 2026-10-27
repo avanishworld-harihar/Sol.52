@@ -5,6 +5,7 @@
  * On POST: logs a comment_added activity event.
  */
 import { NextRequest, NextResponse } from "next/server";
+import { authorizeProjectRequest } from "@/lib/auth/data-access";
 import { z } from "zod";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
 import { supabase } from "@/lib/supabase";
@@ -29,10 +30,11 @@ const postSchema = z.object({
 // GET
 // ---------------------------------------------------------------------------
 
-export async function GET(_req: NextRequest, ctx: RouteCtx) {
+export async function GET(req: NextRequest, ctx: RouteCtx) {
   try {
     const { id } = await ctx.params;
     if (!id) return NextResponse.json({ ok: false, error: "missing_id" }, { status: 400 });
+    const denied = await authorizeProjectRequest(req, id); if (denied) return denied;
 
     const data = await listProjectComments(id);
     return NextResponse.json(
@@ -53,6 +55,7 @@ export async function POST(req: NextRequest, ctx: RouteCtx) {
   try {
     const { id } = await ctx.params;
     if (!id) return NextResponse.json({ ok: false, error: "missing_id" }, { status: 400 });
+    const denied = await authorizeProjectRequest(req, id); if (denied) return denied;
 
     const body = await req.json();
     const parsed = postSchema.parse(body);

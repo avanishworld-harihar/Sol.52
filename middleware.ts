@@ -38,10 +38,12 @@ function isProtectedInstallerPath(pathname: string): boolean {
     "/workspace",
     "/api/customers",
     "/api/projects",
+    "/api/pipeline",
     "/api/proposals",
     "/api/billing",
     "/api/team",
     "/api/analyze-bill",
+    "/api/dashboard-stats",
   ];
   return roots.some((r) => pathname === r || pathname.startsWith(`${r}/`)) || pathname === "/";
 }
@@ -130,9 +132,11 @@ export const config = {
     "/workspace/:path*",
     "/api/customers/:path*",
     "/api/projects/:path*",
+    "/api/pipeline/:path*",
     "/api/proposals/:path*",
     "/api/billing/:path*",
     "/api/team/:path*",
     "/api/analyze-bill",
+    "/api/dashboard-stats",
   ],
 };

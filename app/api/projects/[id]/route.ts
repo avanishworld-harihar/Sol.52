@@ -12,8 +12,8 @@ import { supabase } from "@/lib/supabase";
 import { getProjectDetail, updateProjectAdaptive } from "@/lib/project-store";
 import { logProjectActivity } from "@/lib/project-activity-logger";
 import { isProjectStageId, isProjectStageStatus, isNmSubstatus } from "@/lib/project-stages";
-import { denyIfCrossOrg, denyIfStrictUnauthenticated, resolveOrgScope } from "@/lib/auth/org-scope";
-import { fetchProjectOrgId } from "@/lib/auth/resource-org";
+import { denyIfStrictUnauthenticated, resolveOrgScope } from "@/lib/auth/org-scope";
+import { denyIfCannotAccessProject, isOrganizationMemberUser, mayChooseAssignee } from "@/lib/auth/data-access";
 
 export const dynamic = "force-dynamic";
 
@@ -36,9 +36,8 @@ export async function GET(req: NextRequest, ctx: RouteCtx) {
     const { id } = await ctx.params;
     if (!id) return NextResponse.json({ ok: false, error: "missing_id" }, { status: 400 });
 
-    const projectOrg = await fetchProjectOrgId(id);
-    const deniedOrg = denyIfCrossOrg(projectOrg, scope);
-    if (deniedOrg) return deniedOrg;
+    const deniedAccess = await denyIfCannotAccessProject(id, scope);
+    if (deniedAccess) return deniedAccess;
 
     const data = await getProjectDetail(id);
     if (!data) {
@@ -78,6 +77,7 @@ const patchSchema = z
     actual_completion: z.string().date().optional().nullable(),
     assigned_manager_id: z.string().uuid().optional().nullable(),
     assigned_tech_id: z.string().uuid().optional().nullable(),
+    assigned_to_user_id: z.string().uuid().optional().nullable(),
     site_address: z.string().max(500).optional().nullable(),
     site_lat: z.number().min(-90).max(90).optional().nullable(),
     site_lng: z.number().min(-180).max(180).optional().nullable(),
@@ -128,12 +128,23 @@ export async function PATCH(req: NextRequest, ctx: RouteCtx) {
     const { id } = await ctx.params;
     if (!id) return NextResponse.json({ ok: false, error: "missing_id" }, { status: 400 });
 
-    const projectOrg = await fetchProjectOrgId(id);
-    const deniedOrg = denyIfCrossOrg(projectOrg, scope);
-    if (deniedOrg) return deniedOrg;
+    const deniedAccess = await denyIfCannotAccessProject(id, scope);
+    if (deniedAccess) return deniedAccess;
 
     const body = await req.json();
     const parsed = patchSchema.parse(body);
+    if (parsed.assigned_to_user_id !== undefined) {
+      if (!mayChooseAssignee(scope)) {
+        return NextResponse.json({ ok: false, error: "Only company admin can reassign projects." }, { status: 403 });
+      }
+      if (
+        parsed.assigned_to_user_id &&
+        scope.organizationId &&
+        !(await isOrganizationMemberUser(scope.organizationId, parsed.assigned_to_user_id))
+      ) {
+        return NextResponse.json({ ok: false, error: "Assignee is not a member of this organization." }, { status: 400 });
+      }
+    }
 
     const client = db();
     if (!client) return NextResponse.json({ ok: false, error: "db_unavailable" }, { status: 503 });

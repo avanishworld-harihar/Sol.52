@@ -10,6 +10,7 @@
  *   - version_number is auto-incremented (max existing + 1)
  */
 import { NextRequest, NextResponse } from "next/server";
+import { authorizeProjectRequest } from "@/lib/auth/data-access";
 import { z } from "zod";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
 import { supabase } from "@/lib/supabase";
@@ -49,9 +50,10 @@ const designBodySchema = z.object({
 // GET
 // ---------------------------------------------------------------------------
 
-export async function GET(_req: NextRequest, ctx: RouteCtx) {
+export async function GET(req: NextRequest, ctx: RouteCtx) {
   try {
     const { id } = await ctx.params;
+    const denied = await authorizeProjectRequest(req, id); if (denied) return denied;
     if (!id) return NextResponse.json({ ok: false, error: "missing_id" }, { status: 400 });
 
     const data = await listProjectDesigns(id);
@@ -72,6 +74,7 @@ export async function GET(_req: NextRequest, ctx: RouteCtx) {
 export async function POST(req: NextRequest, ctx: RouteCtx) {
   try {
     const { id } = await ctx.params;
+    const denied = await authorizeProjectRequest(req, id); if (denied) return denied;
     if (!id) return NextResponse.json({ ok: false, error: "missing_id" }, { status: 400 });
 
     const body = await req.json();
