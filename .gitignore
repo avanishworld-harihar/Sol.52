@@ -20,3 +20,6 @@ public/workbox-*.js.map
 public/swe-worker-*.js
 public/swe-worker-*.js.map
 scripts/backups/
+
+# Personal invitation artwork (not part of the Sol.52 product)
+/invitation-card-*.png
