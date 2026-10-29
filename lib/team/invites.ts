@@ -7,6 +7,7 @@ import {
 } from "@/lib/billing/entitlements";
 import { isBillingEntitlementError } from "@/lib/billing/errors";
 import { getOrgSubscription } from "@/lib/billing/subscription-store";
+import { SUBSCRIPTIONS_ENABLED } from "@/lib/billing/config";
 
 export type OrgInviteRow = {
   id: string;
@@ -188,7 +189,7 @@ export async function createPhoneInvite(input: {
   const pendingCount = await countPendingInvites(input.organizationId);
   const sub = await getOrgSubscription(input.organizationId);
   const maxUsers = sub?.plan.max_users ?? sub?.plan.features.max_users ?? 1;
-  if (sub?.plan.features.team_members_enabled && memberCount + pendingCount >= maxUsers) {
+  if (SUBSCRIPTIONS_ENABLED && sub?.plan.features.team_members_enabled && memberCount + pendingCount >= maxUsers) {
     return {
       error: `Team seat limit reached (${maxUsers}), including pending invites.`,
       status: 402,

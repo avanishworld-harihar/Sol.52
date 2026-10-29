@@ -18,13 +18,16 @@ import type {
 import { getMonthlyUsage, incrementProposalUsage, logBillingEvent } from "@/lib/billing/usage";
 import { checkTrialAbuse } from "@/lib/billing/trial-abuse";
 import { countOrgMembers } from "@/lib/billing/team";
+import { SUBSCRIPTIONS_ENABLED } from "@/lib/billing/config";
 
 export async function isBillingAvailable(): Promise<boolean> {
+  if (!SUBSCRIPTIONS_ENABLED) return false;
   const plan = await getPlanByCode("trial");
   return plan !== null;
 }
 
 function isBillingEnforced(): boolean {
+  if (!SUBSCRIPTIONS_ENABLED) return false;
   if (process.env.BILLING_ENFORCE === "false" || process.env.BILLING_ENFORCE === "0") {
     return false;
   }
@@ -308,16 +311,12 @@ export async function recordProposalCreated(
 export async function assertCanAddTeamMember(input: {
   organizationId: string;
   sub?: OrganizationSubscription | null;
-}): Promise<OrganizationSubscription> {
+}): Promise<OrganizationSubscription | null> {
   if (!input.organizationId) {
     throw new BillingEntitlementError("no_subscription", "Organization is required.");
   }
   if (!(await isBillingAvailable()) || !isBillingEnforced()) {
-    const sub = input.sub ?? (await getOrgSubscription(input.organizationId));
-    if (!sub) {
-      throw new BillingEntitlementError("no_subscription", "No active subscription for this organization.");
-    }
-    return sub;
+    return input.sub ?? (await getOrgSubscription(input.organizationId));
   }
 
   const sub = input.sub ?? (await resolveOrgBilling(input.organizationId)) ?? null;
@@ -350,6 +349,7 @@ export async function assertCanAddTeamMember(input: {
 }
 
 export async function shouldShowPdfWatermark(organizationId: string | null): Promise<boolean> {
+  if (!SUBSCRIPTIONS_ENABLED) return false;
   if (!organizationId) return false;
   const sub = await getActiveOrgSubscription(organizationId);
   if (!sub) return false;

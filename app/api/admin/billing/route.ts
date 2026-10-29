@@ -9,6 +9,7 @@ import {
   buildAdminOrgBillingSnapshot,
   listOrganizationsWithBilling,
   listSubscriptionPlans,
+  SUBSCRIPTIONS_ENABLED,
 } from "@/lib/billing";
 
 export const dynamic = "force-dynamic";
@@ -50,6 +51,9 @@ const patchSchema = basePatchSchema.superRefine((body, ctx) => {
 });
 
 export async function GET(req: NextRequest) {
+  if (!SUBSCRIPTIONS_ENABLED) {
+    return NextResponse.json({ ok: false, error: "Subscriptions are not currently available." }, { status: 404 });
+  }
   if (!(await isAdminRequestAllowed(req))) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
@@ -73,6 +77,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
+  if (!SUBSCRIPTIONS_ENABLED) {
+    return NextResponse.json({ ok: false, error: "Subscriptions are not currently available." }, { status: 404 });
+  }
   if (!(await isAdminRequestAllowed(req))) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }

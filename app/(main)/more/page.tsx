@@ -17,7 +17,6 @@ import { MoreRateCardGroup } from "@/components/settings/more-rate-card-group";
 import { ProposalTemplateSettingsPanel } from "@/components/settings/proposal-template-settings-panel";
 import { AccountSessionCard } from "@/components/settings/account-session-card";
 import { TeamManagementCard } from "@/components/settings/team-management-card";
-import { SubscriptionUsageCard } from "@/components/settings/subscription-usage-card";
 import { useInstallerDiscoms } from "@/hooks/use-installer-discoms";
 import { useAppSession } from "@/hooks/use-app-session";
 import { supabase } from "@/lib/supabase";
@@ -43,7 +42,6 @@ import {
   BadgeCheck,
   Building2,
   ChevronDown,
-  CreditCard,
   MapPin,
   ReceiptText,
   Settings2,
@@ -373,50 +371,9 @@ export default function MorePage() {
 
         {isEmployee ? (
           <div className="rounded-2xl border border-border/60 bg-card/60 p-4 text-xs font-medium text-muted-foreground">
-            You are signed in as an <span className="font-extrabold text-foreground">employee</span>. Billing,
-            rate card, and team invites are only for the company admin.
+            You are signed in as an <span className="font-extrabold text-foreground">employee</span>. Rate card
+            and team invites are only for the company admin.
           </div>
-        ) : null}
-
-        {isCompanyAdmin || !appSession?.signedIn ? (
-          <>
-            <MoreSectionLabel>Plan &amp; billing</MoreSectionLabel>
-
-            <MoreGroup
-              id="more-section-subscription"
-              icon={CreditCard}
-              title="Subscription"
-              subtitle="Plan, trial days, and proposal usage."
-              defaultOpen
-            >
-              <SubscriptionUsageCard />
-            </MoreGroup>
-
-            <MoreGroup
-              id="more-section-plans"
-              icon={CreditCard}
-              title="Plans"
-              subtitle="Subscriptions and a quick reminder — tap to open."
-            >
-              <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
-                <PlanCard title="Trial" price="Free 30 days" detail="Full Pro access to build habit fast" accent="blue" />
-                <PlanCard title="Pro" price="₹299 / month" detail="Unlimited proposals for growing teams" accent="green" />
-                <PlanCard title="Business" price="₹999 / month" detail="3 users + white-label control" accent="violet" />
-              </div>
-              <p className="text-[11px] font-semibold text-slate-600 sm:text-xs">
-                Pro is the usual pick for active proposal teams.
-              </p>
-
-              <div className="ss-card-subtle rounded-2xl p-3">
-                <div className="flex items-start gap-2">
-                  <Sparkles className="mt-0.5 h-4 w-4 text-amber-500" />
-                  <p className="text-xs font-semibold text-slate-700 sm:text-sm">
-                    Save company profile before generating a proposal so the customer link picks up the latest details.
-                  </p>
-                </div>
-              </div>
-            </MoreGroup>
-          </>
         ) : null}
 
         <MoreSectionLabel>Proposals &amp; pricing</MoreSectionLabel>
@@ -817,32 +774,6 @@ function InfoChip({ label, value }: { label: string; value: string }) {
     <div className="rounded-xl border border-white/55 bg-white/70 p-3">
       <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">{label}</p>
       <p className="mt-1 text-sm font-extrabold text-brand-900">{value}</p>
-    </div>
-  );
-}
-
-function PlanCard({
-  title,
-  price,
-  detail,
-  accent
-}: {
-  title: string;
-  price: string;
-  detail: string;
-  accent: "blue" | "green" | "violet";
-}) {
-  const accentClass =
-    accent === "green"
-      ? "border-emerald-300 bg-emerald-50/70"
-      : accent === "violet"
-        ? "border-violet-300 bg-violet-50/70"
-        : "border-sky-300 bg-sky-50/70";
-  return (
-    <div className={cn("rounded-xl border p-3", accentClass)}>
-      <p className="text-xs font-bold uppercase tracking-wide text-slate-600">{title}</p>
-      <p className="mt-1 text-base font-extrabold text-brand-900">{price}</p>
-      <p className="mt-1 text-[11px] font-semibold text-slate-700">{detail}</p>
     </div>
   );
 }

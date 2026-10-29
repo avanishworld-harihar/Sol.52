@@ -10,6 +10,7 @@ import {
   getRazorpayKeyId,
   isRazorpayCheckoutConfigured,
   logBillingEvent,
+  SUBSCRIPTIONS_ENABLED,
 } from "@/lib/billing";
 
 export const runtime = "nodejs";
@@ -21,6 +22,13 @@ const schema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  if (!SUBSCRIPTIONS_ENABLED) {
+    return NextResponse.json(
+      { ok: false, error: "Subscriptions are not currently available." },
+      { status: 404 }
+    );
+  }
+
   const session = resolveAppSessionFromRequest(req);
   if (!session) {
     return NextResponse.json({ ok: false, error: "Sign in is required to subscribe." }, { status: 401 });

@@ -14,12 +14,14 @@ import {
 import { getActiveOrgSubscription } from "@/lib/billing/subscription-lifecycle";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
 import { supabase } from "@/lib/supabase";
+import { SUBSCRIPTIONS_ENABLED } from "@/lib/billing/config";
 
 function db() {
   return createSupabaseAdmin() ?? supabase;
 }
 
 function isBillingEnforced(): boolean {
+  if (!SUBSCRIPTIONS_ENABLED) return false;
   if (process.env.BILLING_ENFORCE === "false" || process.env.BILLING_ENFORCE === "0") {
     return false;
   }

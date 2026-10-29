@@ -1,5 +1,4 @@
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
-import { resolveOrgBilling } from "@/lib/billing/entitlements";
 import type { OrgRole } from "@/lib/auth/session";
 import { phoneDigitsForCompare } from "@/lib/auth/phone";
 import { acceptInviteForUser, findPendingInviteForPhone } from "@/lib/team/invites";
@@ -133,12 +132,6 @@ export async function ensureOrgMembershipForUser(input: {
   if (joinErr) {
     console.warn("[auth] create membership failed:", joinErr.message);
     return null;
-  }
-
-  try {
-    await resolveOrgBilling(String(org.id), { verified_phone: input.phone });
-  } catch (e) {
-    console.warn("[auth] trial bootstrap:", e instanceof Error ? e.message : e);
   }
 
   return {

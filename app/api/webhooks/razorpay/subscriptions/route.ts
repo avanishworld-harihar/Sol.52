@@ -9,6 +9,7 @@ import {
   verifyRazorpayWebhookSignature,
 } from "@/lib/billing";
 import type { SubscriptionStatus } from "@/lib/billing";
+import { SUBSCRIPTIONS_ENABLED } from "@/lib/billing";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -45,6 +46,9 @@ function mapEvent(eventType: string): {
 }
 
 export async function POST(req: NextRequest) {
+  if (!SUBSCRIPTIONS_ENABLED) {
+    return NextResponse.json({ ok: false, error: "Subscriptions are not currently available." }, { status: 404 });
+  }
   const rawBody = await req.text();
   const signature = req.headers.get("x-razorpay-signature") ?? "";
   if (!verifyRazorpayWebhookSignature(rawBody, signature)) {

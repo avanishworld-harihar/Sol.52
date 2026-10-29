@@ -77,7 +77,6 @@ import {
 } from "@/lib/requirement-consumption-sync";
 import { ProposalLivePreviewPanel } from "@/components/proposals/os/live-preview-panel";
 import { BlockPlaylistEditor } from "@/components/proposals/os/block-playlist-editor";
-import { ProposalLimitUpgradeModal } from "@/components/billing/proposal-limit-upgrade-modal";
 
 import { CommercialProposalWorkspace } from "@/components/commercial/commercial-proposal-workspace";
 import { ProposalReviewSheet } from "@/components/commercial/proposal-review-sheet";
@@ -306,8 +305,6 @@ function ProposalPageContent() {
   const [isPptDownloading, setIsPptDownloading] = useState(false);
   const [isCopyingSummary, setIsCopyingSummary] = useState(false);
   const [isWebProposalBusy, setIsWebProposalBusy] = useState(false);
-  const [proposalLimitModalOpen, setProposalLimitModalOpen] = useState(false);
-  const [proposalLimitPlanName, setProposalLimitPlanName] = useState<string | null>(null);
   const [latestWebProposalUrl, setLatestWebProposalUrl] = useState<string | null>(null);
   const [draftProposalId, setDraftProposalId] = useState<string | null>(null);
   // Proposal Builder Settings — language + EMI only (logo, bank, AMC, site photos live in More > Company Profile).
@@ -2735,17 +2732,6 @@ function ProposalPageContent() {
     }
   }
 
-  async function openProposalLimitModal() {
-    try {
-      const res = await fetch("/api/billing/usage", { cache: "no-store" });
-      const json = (await res.json()) as { data?: { planName?: string } | null };
-      setProposalLimitPlanName(json.data?.planName ?? null);
-    } catch {
-      setProposalLimitPlanName(null);
-    }
-    setProposalLimitModalOpen(true);
-  }
-
   async function persistProposalToServer(): Promise<{
     id: string;
     shareUrl: string;
@@ -2871,14 +2857,7 @@ function ProposalPageContent() {
         code?: string;
       };
       if (response.status === 402) {
-        if (
-          json.code === "proposal_limit_reached" ||
-          json.code === "trial_expired" ||
-          json.code === "no_subscription"
-        ) {
-          await openProposalLimitModal();
-        }
-        toast.error("Cannot create proposal", json.error || "Billing or plan limit blocked this proposal.");
+        toast.error("Cannot create proposal", json.error || "Proposal creation is temporarily unavailable.");
         return null;
       }
       if (response.status === 409 || json.code === "preset_not_allowed") {
@@ -4263,11 +4242,6 @@ function ProposalPageContent() {
           </div>
         </div>{/* end OS layout flex */}
       </WorkspacePage>
-      <ProposalLimitUpgradeModal
-        open={proposalLimitModalOpen}
-        onClose={() => setProposalLimitModalOpen(false)}
-        planName={proposalLimitPlanName}
-      />
     </>
   );
 }

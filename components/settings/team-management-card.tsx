@@ -31,7 +31,7 @@ type TeamData = {
   canManage: boolean;
   memberCount: number;
   pendingCount: number;
-  maxUsers: number;
+  maxUsers: number | null;
   teamEnabled: boolean;
   canAddMore: boolean;
   planCode: string | null;
@@ -197,7 +197,7 @@ export function TeamManagementCard() {
       <div className="space-y-2 text-xs font-medium text-muted-foreground">
         <p>
           Team seats: {data.memberCount}
-          {data.pendingCount ? ` (+${data.pendingCount} pending)` : ""} / {data.maxUsers}
+          {data.pendingCount ? ` (+${data.pendingCount} pending)` : ""} / {data.maxUsers ?? "Unlimited"}
           {data.planCode ? ` · ${data.planCode}` : ""}
         </p>
         <p>Only the company admin can invite or remove members.</p>
@@ -210,7 +210,7 @@ export function TeamManagementCard() {
       <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
         <Users className="h-4 w-4" />
         {data.memberCount}
-        {data.pendingCount ? ` + ${data.pendingCount} pending` : ""} / {data.maxUsers} seats
+        {data.pendingCount ? ` + ${data.pendingCount} pending` : ""} / {data.maxUsers ?? "Unlimited"} seats
         {!data.teamEnabled ? " · Upgrade to Pro/Business for team invites" : null}
       </div>
 

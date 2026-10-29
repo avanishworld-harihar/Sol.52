@@ -13,7 +13,7 @@ import {
   updateOrgMemberWorkRole,
   getTeamWorkSummary,
 } from "@/lib/team/invites";
-import { countOrgMembers, getOrgSubscription } from "@/lib/billing";
+import { countOrgMembers, getOrgSubscription, SUBSCRIPTIONS_ENABLED } from "@/lib/billing";
 
 export const dynamic = "force-dynamic";
 
@@ -31,8 +31,8 @@ export async function GET(req: NextRequest) {
         countPendingInvites(orgId),
         getOrgSubscription(orgId),
       ]);
-      const maxUsers = sub?.plan.max_users ?? sub?.plan.features.max_users ?? 1;
-      const teamEnabled = sub?.plan.features.team_members_enabled === true;
+      const maxUsers = SUBSCRIPTIONS_ENABLED ? sub?.plan.max_users ?? sub?.plan.features.max_users ?? 1 : null;
+      const teamEnabled = !SUBSCRIPTIONS_ENABLED || sub?.plan.features.team_members_enabled === true;
       return NextResponse.json(
         {
           ok: true,
@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
             maxUsers,
             teamEnabled,
             canAddMore: false,
-            planCode: sub?.plan.code ?? null,
+            planCode: SUBSCRIPTIONS_ENABLED ? sub?.plan.code ?? null : null,
             members: [],
             invites: [],
           },
@@ -62,8 +62,8 @@ export async function GET(req: NextRequest) {
       getTeamWorkSummary(orgId),
     ]);
 
-    const maxUsers = sub?.plan.max_users ?? sub?.plan.features.max_users ?? 1;
-    const teamEnabled = sub?.plan.features.team_members_enabled === true;
+    const maxUsers = SUBSCRIPTIONS_ENABLED ? sub?.plan.max_users ?? sub?.plan.features.max_users ?? 1 : null;
+    const teamEnabled = !SUBSCRIPTIONS_ENABLED || sub?.plan.features.team_members_enabled === true;
 
     return NextResponse.json(
       {
@@ -74,8 +74,8 @@ export async function GET(req: NextRequest) {
           pendingCount,
           maxUsers,
           teamEnabled,
-          canAddMore: teamEnabled && memberCount + pendingCount < maxUsers,
-          planCode: sub?.plan.code ?? null,
+          canAddMore: teamEnabled && (maxUsers == null || memberCount + pendingCount < maxUsers),
+          planCode: SUBSCRIPTIONS_ENABLED ? sub?.plan.code ?? null : null,
           members,
           invites,
           workSummary,

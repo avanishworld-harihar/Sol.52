@@ -1,4 +1,5 @@
 export * from "@/lib/billing/types";
+export * from "@/lib/billing/config";
 export * from "@/lib/billing/errors";
 export * from "@/lib/billing/theme-keys";
 export * from "@/lib/billing/plan-utils";
