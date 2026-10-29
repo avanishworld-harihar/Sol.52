@@ -8,6 +8,7 @@ import {
   isAppAuthConfigured,
   otpPendingCookieConfig,
 } from "@/lib/auth/session";
+import { isAuthSystemEnabled } from "@/lib/auth/constants";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
 import { extractClientIp, tokenBucket } from "@/lib/rate-limit";
 
@@ -20,6 +21,12 @@ const schema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
+    if (!isAuthSystemEnabled()) {
+      return NextResponse.json(
+        { ok: false, error: "Login is temporarily disabled while the system is being updated." },
+        { status: 503 }
+      );
+    }
     if (!isAppAuthConfigured() || !createSupabaseAdmin()) {
       return NextResponse.json(
         {

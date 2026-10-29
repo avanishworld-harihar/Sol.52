@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { readAppSession, type AppSession } from "@/lib/auth/session";
 import { resolveDefaultOrgId } from "@/lib/project-store";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
+import { isAuthSystemEnabled } from "@/lib/auth/constants";
 
 export type OrgScopeMode = "session" | "legacy";
 
@@ -22,6 +23,7 @@ export type OrgScope = {
  * strict: CRM APIs require a signed-in org session (AUTH_ORG_ISOLATION=strict).
  */
 export function isOrgIsolationStrict(): boolean {
+  if (!isAuthSystemEnabled()) return false;
   const configured = process.env.AUTH_ORG_ISOLATION;
   if (configured == null || configured.trim() === "") return process.env.NODE_ENV === "production";
   const v = configured.trim().toLowerCase();
@@ -29,7 +31,9 @@ export function isOrgIsolationStrict(): boolean {
 }
 
 export async function resolveOrgScope(req: NextRequest): Promise<OrgScope> {
-  const presentedSession = readAppSession(req);
+  // Temporary auth-off mode deliberately ignores old browser sessions so the
+  // app behaves as one legacy workspace while login changes are in progress.
+  const presentedSession = isAuthSystemEnabled() ? readAppSession(req) : null;
   let session = presentedSession;
   if (session?.organizationId) {
     const admin = createSupabaseAdmin();

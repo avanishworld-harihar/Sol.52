@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { ADMIN_COOKIE_NAME, isAdminEnabled } from "@/lib/admin-access";
-import { APP_SESSION_COOKIE, isAuthLoginRequired } from "@/lib/auth/constants";
+import { APP_SESSION_COOKIE, isAuthLoginRequired, isAuthSystemEnabled } from "@/lib/auth/constants";
 
 function isAdminPath(pathname: string): boolean {
   return pathname.startsWith("/admin");
@@ -29,6 +29,7 @@ function isProtectedInstallerPath(pathname: string): boolean {
   if (isAdminPath(pathname) || isAdminApiPath(pathname)) return false;
   const roots = [
     "/customers",
+    "/field-work",
     "/projects",
     "/proposals",
     "/proposal",
@@ -37,6 +38,7 @@ function isProtectedInstallerPath(pathname: string): boolean {
     "/more",
     "/workspace",
     "/api/customers",
+    "/api/field-work",
     "/api/projects",
     "/api/pipeline",
     "/api/proposals",
@@ -95,6 +97,12 @@ export function middleware(req: NextRequest) {
   const admin = handleAdminGuard(req);
   if (admin) return admin;
 
+  if (!isAuthSystemEnabled() && req.nextUrl.pathname === "/login") {
+    const next = req.nextUrl.searchParams.get("next");
+    const destination = next?.startsWith("/") && !next.startsWith("//") ? next : "/customers";
+    return NextResponse.redirect(new URL(destination, req.url));
+  }
+
   if (isAuthLoginRequired()) {
     const { pathname, search } = req.nextUrl;
     if (isProtectedInstallerPath(pathname)) {
@@ -122,6 +130,7 @@ export const config = {
     "/api/auth/:path*",
     "/",
     "/customers/:path*",
+    "/field-work/:path*",
     "/projects/:path*",
     "/proposals/:path*",
     "/proposal",
@@ -131,6 +140,7 @@ export const config = {
     "/more/:path*",
     "/workspace/:path*",
     "/api/customers/:path*",
+    "/api/field-work/:path*",
     "/api/projects/:path*",
     "/api/pipeline/:path*",
     "/api/proposals/:path*",

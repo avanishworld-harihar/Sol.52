@@ -14,6 +14,7 @@ import {
 } from "@/lib/auth/session";
 import { findOrCreateAuthUserByPhone } from "@/lib/auth/users";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
+import { isAuthSystemEnabled } from "@/lib/auth/constants";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -26,6 +27,12 @@ const schema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
+    if (!isAuthSystemEnabled()) {
+      return NextResponse.json(
+        { ok: false, error: "Login is temporarily disabled while the system is being updated." },
+        { status: 503 }
+      );
+    }
     if (!isAppAuthConfigured() || !createSupabaseAdmin()) {
       return NextResponse.json(
         { ok: false, error: "Auth is not configured. Set SUPABASE_SERVICE_ROLE_KEY." },
